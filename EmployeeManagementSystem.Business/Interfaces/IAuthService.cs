@@ -1,0 +1,12 @@
+﻿using EmployeeManagementSystem.Business.DTOs.Auth;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace EmployeeManagementSystem.Business.Interfaces
+{
+    public interface IAuthService
+    {
+        Task<bool> LoginAsync(LoginRequestDto request);
+    }
+}
