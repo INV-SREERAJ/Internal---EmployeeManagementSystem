@@ -4,6 +4,7 @@ using EmployeeManagementSystem.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260715120254_SeedDefaultAdmin")]
+    partial class SeedDefaultAdmin
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -187,7 +190,7 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                             IsDeleted = false,
                             LastName = "Admin",
                             MustChangePassword = true,
-                            PasswordHash = "$2a$12$j6rZXXE38.Thjp6aP1gqN.l5vhHT3Ym32VRq/ns4Edi3HQloOEAKO",
+                            PasswordHash = "$2a$12$MgMyDfo9MgheJK33AYLbRu/6r3CXeDu.Uy0bH471dt8lo8AOUR9yy",
                             PhoneNumber = "9999999999",
                             RoleId = 1,
                             TokenVersion = 0,

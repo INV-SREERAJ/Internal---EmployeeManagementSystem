@@ -61,6 +61,26 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
                    .WithMany(u => u.Employees)
                    .HasForeignKey(u => u.ManagerId)
                    .OnDelete(DeleteBehavior.Restrict);
-        }
+
+            builder.HasData(
+            new User
+            {
+                Id = 1,
+                EmployeeCode = "EMP0001",
+                FirstName = "System",
+                LastName = "Admin",
+                Email = "admin@ems.com",
+                PhoneNumber = "9999999999",
+                PasswordHash = "$2a$12$j6rZXXE38.Thjp6aP1gqN.l5vhHT3Ym32VRq/ns4Edi3HQloOEAKO",
+                RoleId = 1,              // Admin
+                ManagerId = null,
+                TokenVersion = 0,
+                MustChangePassword = true,
+                IsActive = true,
+                IsDeleted = false,
+                CreatedAt = new DateTime(2026, 7, 15),
+                UpdatedAt = new DateTime(2026, 7, 15)
+            });
+            }
     }
 }

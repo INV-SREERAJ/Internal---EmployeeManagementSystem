@@ -7,6 +7,6 @@ namespace EmployeeManagementSystem.Business.Interfaces
 {
     public interface IAuthService
     {
-        Task<bool> LoginAsync(LoginRequestDto request);
+        Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
     }
 }
