@@ -1,5 +1,6 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,5 +24,24 @@ public class TestController : ControllerBase
 
         return Ok(loginResponse);
         
+    }
+
+    [Authorize]
+    [HttpGet("protected")]
+    public IActionResult Protected()
+    {
+        return Ok("Protected endpoint");
+    }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken(
+    RefreshTokenRequestDto request)
+    {
+        var response = await _authService.RefreshTokenAsync(request);
+
+        if (!response.Success)
+            return Unauthorized(response);
+
+        return Ok(response);
     }
 }

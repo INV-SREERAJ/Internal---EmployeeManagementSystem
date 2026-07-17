@@ -1,6 +1,7 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.Business.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Api.Controllers
@@ -26,6 +27,22 @@ namespace EmployeeManagementSystem.Api.Controllers
 
             return Ok(loginResponse);
 
+        }
+
+
+        //refreshing accesstoken 
+        [HttpPost("refresh")]
+        [AllowAnonymous]
+        public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)
+        {
+            var response = await _authService.RefreshTokenAsync(request);
+
+            if (response == null)
+                return Unauthorized();
+
+            if (!response.Success)
+                return Unauthorized(response);
+            return Ok(response);
         }
     }
 }

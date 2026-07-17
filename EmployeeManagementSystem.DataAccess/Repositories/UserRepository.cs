@@ -17,12 +17,16 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         }
         public async Task<User?> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(x=>x.Email == email);
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
-        public Task<User?> GetByIdAsync(int id)
+        public async Task<User?> GetByIdAsync(int id)
         {
-            return _context.Users.FirstOrDefaultAsync(x=> x.Id == id);
+            return await _context.Users
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(x=> x.Id == id);
         }
 
         public async Task UpdateAsync(User user)
