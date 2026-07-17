@@ -13,11 +13,11 @@ namespace EmployeeManagementSystem.Business.Services
     public class AuthService : IAuthService
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPasswordHasher _passwordHasher;
+        private readonly IPasswordService _passwordHasher;
         private readonly IJwtService _jwtService;
         private readonly IRefreshTokenGraceCache _graceCache;
 
-        public AuthService(IUserRepository userRepository, IPasswordHasher passwordHasher, IJwtService jwtService, IRefreshTokenGraceCache cache)
+        public AuthService(IUserRepository userRepository, IPasswordService passwordHasher, IJwtService jwtService, IRefreshTokenGraceCache cache)
         {
             _userRepository = userRepository;
             _passwordHasher = passwordHasher;

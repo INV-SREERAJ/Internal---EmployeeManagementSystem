@@ -12,5 +12,9 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
         Task<User?> GetByIdAsync(int id);
 
         Task UpdateAsync(User user);
+
+        Task<bool> EmailExistsAsync(string email);
+
+        Task<User> AddUserAsync(User user);
     }
 }

@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Mvc;
 public class TestController : ControllerBase
 {
     private IAuthService _authService;
+    private readonly IEmailService _emailService;
 
-    public TestController(IAuthService authService)
+    public TestController(IAuthService authService, IEmailService emailService)
     {
         _authService = authService;
+        _emailService = emailService;
     }
 
     [HttpPost("login")]
@@ -43,5 +45,19 @@ public class TestController : ControllerBase
             return Unauthorized(response);
 
         return Ok(response);
+    }
+
+    [HttpPost("send-email")]
+    public async Task<IActionResult> SendTestEmail()
+    {
+        await _emailService.WelcomeEmailAsync(
+            "sreerajr342@gmail.com",
+            "Sreeraj",
+            "Temp@123");
+
+        return Ok(new
+        {
+            Message = "Test email sent successfully."
+        });
     }
 }

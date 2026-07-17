@@ -15,6 +15,21 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         {
             _context = context;
         }
+
+        public async Task<User> AddUserAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            return user;
+        }
+
+        public async Task<bool> EmailExistsAsync(string email)
+        {
+            return await _context.Users
+        .AnyAsync(u => u.Email == email && !u.IsDeleted);
+        }
+
         public async Task<User?> GetByEmailAsync(string email)
         {
             return await _context.Users
