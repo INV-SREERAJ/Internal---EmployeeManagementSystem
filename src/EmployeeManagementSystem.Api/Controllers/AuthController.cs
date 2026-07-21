@@ -31,6 +31,7 @@ namespace EmployeeManagementSystem.Api.Controllers
 
 
         //refreshing accesstoken 
+        // allow anonymous since the accesstoken might be expired
         [HttpPost("refresh")]
         [AllowAnonymous]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)

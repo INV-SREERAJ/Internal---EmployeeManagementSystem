@@ -1,5 +1,7 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
+using EmployeeManagementSystem.Business.GlobalExceptionHandler;
 using EmployeeManagementSystem.Business.Interfaces;
+using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Entities;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -14,20 +16,51 @@ namespace EmployeeManagementSystem.Business.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordService _passwordService;
         private readonly IEmailService _emailService;
-
-        public AdminService(IUserRepository userRepository, IPasswordService passwordService, IEmailService emailService)
+        private readonly IRoleRepository _roleRepository;
+        private readonly IAdminRepository _adminRepository;
+        public AdminService(IUserRepository userRepository, IPasswordService passwordService, IEmailService emailService,
+            IRoleRepository roleRepository, IAdminRepository adminRepository)
         {
             _userRepository = userRepository;
             _passwordService = passwordService;
             _emailService = emailService;
+            _roleRepository = roleRepository;
+            _adminRepository = adminRepository;
         }
         public async Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request)
         {
             var emailExists = await _userRepository.EmailExistsAsync(request.Email);
             if (emailExists)
             {
-                throw new Exception("Email Already exist");
+                throw new ConflictException("Email already exists!!");
             }
+
+
+            //verification if the role id actually present.
+            if (!await _roleRepository.RoleExistsById(request.RoleId)) 
+            {
+                throw new NotFoundException("Role not found.");
+            }
+
+            //checking with manager id.
+            if (request.ManagerId.HasValue)
+            {
+                var manager = await _userRepository.GetByIdAsync(request.ManagerId.Value);
+
+                if (manager == null)
+                    throw new NotFoundException("Manager not found.");
+                if (!manager.IsActive || manager.IsDeleted)
+                {
+                    throw new ConflictException("Selected manager is inactive.");
+                }
+                if (manager.Role.Name != "Manager" &&
+                    manager.Role.Name != "Admin")
+                {
+                    throw new ConflictException("Selected user cannot be assigned as manager.");
+                }
+            }
+
+            
 
             var temporaryPassword = _passwordService.GenerateTemporaryPassword();
 
@@ -70,5 +103,33 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
+        public async Task<PagedResponse<UserListDto>> GetUsersAsync(UserQueryParameters parameters)
+        {
+            var (users, totalCount) =
+                await _adminRepository.GetUsersAsync(parameters);
+
+            var userDtos = users.Select(user => new UserListDto
+            {
+                Id = user.Id,
+                EmployeeCode = user.EmployeeCode,
+                FullName = $"{user.FirstName} {user.LastName}",
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role.Name,
+                ManagerName = user.Manager == null
+                    ? null
+                    : $"{user.Manager.FirstName} {user.Manager.LastName}",
+                IsActive = user.IsActive
+            });
+
+            return new PagedResponse<UserListDto>
+            {
+                Data = userDtos,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize)
+            };
+        }
     }
 }

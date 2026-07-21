@@ -37,6 +37,15 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                 .FirstOrDefaultAsync(u => u.Email == email);
         }
 
+        public async Task<User?> GetByEmployeeCodeAsync(string employeeCode)
+        {
+            return await _context.Users
+                .Include(e => e.Role)
+                .Include(e => e.Manager)
+                .FirstOrDefaultAsync(e => e.EmployeeCode == employeeCode);
+
+        }
+
         public async Task<User?> GetByIdAsync(int id)
         {
             return await _context.Users
@@ -49,5 +58,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             _context.Users.Update(user);
             await _context.SaveChangesAsync();
         }
+
+        
     }
 }

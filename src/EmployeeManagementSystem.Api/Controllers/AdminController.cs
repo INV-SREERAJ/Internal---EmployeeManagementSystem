@@ -1,5 +1,7 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
 using EmployeeManagementSystem.Business.Interfaces;
+using EmployeeManagementSystem.Business.Services;
+using EmployeeManagementSystem.DataAccess.common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,6 +26,16 @@ namespace EmployeeManagementSystem.Api.Controllers
             nameof(CreateUser),
             new { employeeCode = response.EmplooyeeCode},
             response);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers(
+            [FromQuery] UserQueryParameters parameters)
+        {
+            var result = await _adminService.GetUsersAsync(parameters);
+
+            return Ok(result);
         }
     }
 }

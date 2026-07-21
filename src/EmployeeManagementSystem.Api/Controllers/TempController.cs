@@ -1,5 +1,6 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
+using EmployeeManagementSystem.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -10,11 +11,13 @@ public class TestController : ControllerBase
 {
     private IAuthService _authService;
     private readonly IEmailService _emailService;
+    private readonly AdminService adminService;
 
-    public TestController(IAuthService authService, IEmailService emailService)
+    public TestController(IAuthService authService, IEmailService emailService, AdminService adminService)
     {
         _authService = authService;
         _emailService = emailService;
+        this.adminService = adminService;
     }
 
     [HttpPost("login")]
@@ -60,4 +63,6 @@ public class TestController : ControllerBase
             Message = "Test email sent successfully."
         });
     }
+
+    
 }

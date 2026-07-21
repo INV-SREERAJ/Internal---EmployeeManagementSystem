@@ -1,0 +1,60 @@
+﻿using EmployeeManagementSystem.Business.GlobalExceptionHandler;
+using System.Text.Json;
+
+namespace EmployeeManagementSystem.Api.Middleware
+{
+    public class Exceptions
+    {
+        private readonly RequestDelegate _next;
+        public Exceptions(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext context)
+        {
+            try
+            {
+                await _next(context);
+            }
+            catch (ConflictException ex)
+            {
+                await HandleExceptionAsync(
+                    context,
+                    StatusCodes.Status409Conflict,
+                    ex.Message);
+            }
+            catch(NotFoundException ex)
+            {
+                await HandleExceptionAsync(
+                    context,
+                    StatusCodes.Status404NotFound, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                await HandleExceptionAsync(
+                    context,
+                    StatusCodes.Status500InternalServerError,
+                    "An unexpected error occurred.");
+            }
+        }
+
+        private static async Task HandleExceptionAsync(
+            HttpContext context,
+            int statusCode,
+            string message)
+        {
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = statusCode;
+
+            var response = new
+            {
+                StatusCode = statusCode,
+                Message = message
+            };
+
+            await context.Response.WriteAsync(
+                JsonSerializer.Serialize(response));
+        }
+    }
+}
