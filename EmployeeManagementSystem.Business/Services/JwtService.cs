@@ -22,13 +22,13 @@ namespace EmployeeManagementSystem.Business.Services
             _jwtSettings = jwtOptions.Value;
         }
 
-        public TokenResponseDto GenerateTokens(User user)
+        public TokenResponseDto GenerateTokens(Employee employee)
         {
             var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);
             var refreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
 
-            var accessToken = GenerateAccessToken(user, accessTokenExpiry);
-            var refreshToken = GenerateRefreshToken(user, refreshTokenExpiry);
+            var accessToken = GenerateAccessToken(employee, accessTokenExpiry);
+            var refreshToken = GenerateRefreshToken(employee, refreshTokenExpiry);
 
             return new TokenResponseDto
             {
@@ -77,16 +77,17 @@ namespace EmployeeManagementSystem.Business.Services
             return expiresAt <= DateTime.UtcNow.AddHours(24);
         }
 
-        private string GenerateAccessToken(User user, DateTime expiresAt)
+        private string GenerateAccessToken(Employee employee, DateTime expiresAt)
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(ClaimTypes.Role, user.Role.Name),
-                new Claim("TokenVersion", user.TokenVersion.ToString()),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim("TokenType", "Access")
+                new Claim(JwtRegisteredClaimNames.Sub, employee.EmployeeCode),
+                new Claim(JwtRegisteredClaimNames.Email, employee.Email),
+                new Claim(ClaimTypes.Role, employee.Role.ToString()),
+                new Claim("EmployeeCode", employee.EmployeeCode),
+                new Claim("TokenVersion", employee.TokenVersion.ToString()),
+                new Claim("TokenType", "Access"),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var key = new SymmetricSecurityKey(
@@ -106,12 +107,13 @@ namespace EmployeeManagementSystem.Business.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private string GenerateRefreshToken(User user, DateTime expiresAt)
+        private string GenerateRefreshToken(Employee employee, DateTime expiresAt)
         {
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim("TokenVersion", user.TokenVersion.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, employee.EmployeeCode),
+                new Claim("EmployeeCode", employee.EmployeeCode),
+                new Claim("TokenVersion", employee.TokenVersion.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim("TokenType", "Refresh")
             };
@@ -133,24 +135,6 @@ namespace EmployeeManagementSystem.Business.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        //public string GenerateAccessToken(User user)
-        //{
-        //    ...
-        //}
-
-        //public string GenerateRefreshToken(User user)
-        //{
-        //    ...
-        //}
-
-        //public DateTime GetAccessTokenExpiry()
-        //{
-        //    ...
-        //}
-
-        //public DateTime GetRefreshTokenExpiration()
-        //{
-        //    ...
-        //}
+        
     }
 }

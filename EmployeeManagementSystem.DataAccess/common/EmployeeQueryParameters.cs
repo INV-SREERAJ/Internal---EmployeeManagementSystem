@@ -4,7 +4,7 @@ using System.Text;
 
 namespace EmployeeManagementSystem.DataAccess.common;
 
-public class UserQueryParameters
+public class EmployeeQueryParameters
 {
     private const int MaxPageSize = 100;
 

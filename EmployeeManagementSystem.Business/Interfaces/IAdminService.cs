@@ -9,8 +9,9 @@ namespace EmployeeManagementSystem.Business.Interfaces
 {
     public interface IAdminService
     {
-        Task<CreateUserResponse> CreateUserAsync(CreateUserRequest request);
+        Task<CreateEmployeeResponse> CreateEmployeeAsync(CreateEmployeeRequest request);
 
-        Task<PagedResponse<UserListDto>> GetUsersAsync(UserQueryParameters parameters);
+        Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters);
+        Task<bool> UpdateEmployeeStatusAsync(string employeeCode, bool isActive, string currentEmployeeEmployeeCode);
     }
 }

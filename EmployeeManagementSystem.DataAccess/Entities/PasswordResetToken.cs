@@ -21,6 +21,6 @@ namespace EmployeeManagementSystem.DataAccess.Entities
         
         // Navigation Property
 
-        public User User { get; set; } = null!;
+        public Employee Employee { get; set; } = null!;
     }
 }

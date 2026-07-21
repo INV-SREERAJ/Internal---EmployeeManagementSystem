@@ -16,7 +16,7 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
             builder.HasKey(p => p.Id);
 
             builder.Property(p => p.Token).IsRequired();
-            builder.HasOne(p => p.User)
+            builder.HasOne(p => p.Employee)
                .WithMany(u => u.PasswordResetTokens)
                .HasForeignKey(p => p.UserId)
                .OnDelete(DeleteBehavior.Cascade);

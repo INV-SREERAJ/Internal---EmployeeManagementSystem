@@ -11,7 +11,7 @@ namespace EmployeeManagementSystem.Business.Interfaces
     {
 
         ClaimsPrincipal? GetPrincipalFromToken(string token);
-        TokenResponseDto GenerateTokens(User user);
+        TokenResponseDto GenerateTokens(Employee employee);
         bool ShouldRotateRefreshToken(string refreshToken);
     }
 }

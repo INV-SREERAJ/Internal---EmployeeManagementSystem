@@ -1,25 +1,21 @@
-﻿using Azure;
-using Azure.Core;
+﻿
 using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Interfaces;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace EmployeeManagementSystem.Business.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly IPasswordService _passwordHasher;
         private readonly IJwtService _jwtService;
         private readonly IRefreshTokenGraceCache _graceCache;
 
-        public AuthService(IUserRepository userRepository, IPasswordService passwordHasher, IJwtService jwtService, IRefreshTokenGraceCache cache)
+        public AuthService(IEmployeeRepository employeeRepository, IPasswordService passwordHasher, IJwtService jwtService, IRefreshTokenGraceCache cache)
         {
-            _userRepository = userRepository;
+            _employeeRepository = employeeRepository;
             _passwordHasher = passwordHasher;
             _jwtService = jwtService;
             _graceCache = cache;
@@ -27,10 +23,10 @@ namespace EmployeeManagementSystem.Business.Services
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            var user = await _userRepository.GetByEmailAsync(request.Email);
+            var employee = await _employeeRepository.GetByEmailAsync(request.Email);
 
             // User not found
-            if (user == null)
+            if (employee == null)
             {
                 return new LoginResponseDto
                 {
@@ -43,7 +39,7 @@ namespace EmployeeManagementSystem.Business.Services
             // Verify password
             bool isPasswordValid = _passwordHasher.VerifyPassword(
                 request.Password,
-                user.PasswordHash);
+                employee.PasswordHash);
 
             if (!isPasswordValid)
             {
@@ -56,7 +52,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
 
             // Check if account is deleted
-            if (user.IsDeleted)
+            if (employee.IsDeleted)
             {
                 return new LoginResponseDto
                 {
@@ -67,7 +63,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
 
             // Check if account is inactive
-            if (!user.IsActive)
+            if (!employee.IsActive)
             {
                 return new LoginResponseDto
                 {
@@ -78,13 +74,13 @@ namespace EmployeeManagementSystem.Business.Services
             }
 
             // Login successful
-            var tokens = _jwtService.GenerateTokens(user);
+            var tokens = _jwtService.GenerateTokens(employee);
 
             return new LoginResponseDto
             {
                 Success = true,
                 Message = "Login successful.",
-                MustChangePassword = user.MustChangePassword,
+                MustChangePassword = employee.MustChangePassword,
                 AccessToken = tokens.AccessToken,
                 RefreshToken = tokens.RefreshToken,
                 ExpiresAt = tokens.AccessTokenExpiresAt
@@ -138,12 +134,21 @@ namespace EmployeeManagementSystem.Business.Services
                 };
             }
 
-            var userId = int.Parse(
-                principal.FindFirst(JwtRegisteredClaimNames.Sub)!.Value);
+            var employeeCode = principal.FindFirst("EmployeeCode")?.Value;
 
-            var user = await _userRepository.GetByIdAsync(userId);
+            if (string.IsNullOrWhiteSpace(employeeCode))
+            {
+                return new RefreshTokenResponseDto
+                {
+                    Success = false,
+                    Message = "Invalid refresh token."
+                };
+            }
 
-            if (user == null)
+
+            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
+
+            if (employee == null)
             {
                 return new RefreshTokenResponseDto
                 {
@@ -152,7 +157,7 @@ namespace EmployeeManagementSystem.Business.Services
                 };
             }
 
-            if (!user.IsActive || user.IsDeleted)
+            if (!employee.IsActive || employee.IsDeleted)
             {
                 return new RefreshTokenResponseDto
                 {
@@ -167,7 +172,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             
             //checking if the tokenversion in refresh token is matching the one in the db
-            if (tokenVersion != user.TokenVersion)
+            if (tokenVersion != employee.TokenVersion)
             {
                 return new RefreshTokenResponseDto
                 {
@@ -181,12 +186,12 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (shouldRotate)
             {
-                user.TokenVersion++;
+                employee.TokenVersion++;
 
-                await _userRepository.UpdateAsync(user);
+                await _employeeRepository.UpdateAsync(employee);
             }
 
-            var tokens = _jwtService.GenerateTokens(user);
+            var tokens = _jwtService.GenerateTokens(employee);
             
             //everything succeeds and proceeding to create tokens.
             var response =  new RefreshTokenResponseDto

@@ -13,9 +13,7 @@ namespace EmployeeManagementSystem.DataAccess.Context
 
         }
 
-        public DbSet<User> Users { get; set; }
-
-        public DbSet<Role> Roles { get; set; }
+        public DbSet<Employee> Employees { get; set; }
 
         public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

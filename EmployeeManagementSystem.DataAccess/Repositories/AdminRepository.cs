@@ -1,6 +1,7 @@
 ﻿using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Context;
 using EmployeeManagementSystem.DataAccess.Entities;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,9 +16,11 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             _context = context;
         }
 
-        public async Task<(IEnumerable<User> Users, int TotalCount)> GetUsersAsync(UserQueryParameters parameters)
+        
+
+        public async Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters)
         {
-            var query = _context.Users
+            var query = _context.Employees
                 .Where(u => !u.IsDeleted)
                 .Include(u => u.Role)
                 .Include(u => u.Manager)
@@ -36,9 +39,9 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             }
 
             // Filter by Role
-            if (!string.IsNullOrWhiteSpace(parameters.Role))
+            if (!string.IsNullOrWhiteSpace(parameters.Role) && Enum.TryParse<Role>(parameters.Role, true, out var role))
             {
-                query = query.Where(u => u.Role.Name == parameters.Role);
+                query = query.Where(e => e.Role == role);
             }
 
             // Filter by Status
@@ -73,12 +76,27 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
 
             var totalCount = await query.CountAsync();
 
-            var users = await query
+            var employees = await query
                 .Skip((parameters.PageNumber - 1) * parameters.PageSize)
                 .Take(parameters.PageSize)
                 .ToListAsync();
 
-            return (users, totalCount);
+            return (employees, totalCount);
         }
+
+        public async Task UpdateEmployeeAsync(Employee employee)
+        {
+            _context.Employees.Update(employee);
+            await _context.SaveChangesAsync();
+        }
+        public async Task<Employee?> GetEmployeesByEmployeeCodeAsync(string employeeCode)
+        {
+            return await _context.Employees
+                .FirstOrDefaultAsync(u =>
+                    u.EmployeeCode == employeeCode &&
+                    !u.IsDeleted);
+        }
+
+        
     }
 }

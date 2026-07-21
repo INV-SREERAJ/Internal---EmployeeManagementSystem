@@ -1,4 +1,5 @@
 ﻿using EmployeeManagementSystem.DataAccess.Entities;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -7,11 +8,11 @@ using System.Text;
 
 namespace EmployeeManagementSystem.DataAccess.Configurations
 {
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<Employee> builder)
         {
-            builder.ToTable("Users");
+            builder.ToTable("Employees");
 
             builder.HasKey(u => u.Id);
 
@@ -52,10 +53,8 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
             builder.Property(u => u.MustChangePassword)
                    .HasDefaultValue(true);
 
-            builder.HasOne(u => u.Role)
-                   .WithMany(r => r.Users)
-                   .HasForeignKey(u => u.RoleId)
-                   .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(e => e.Role).HasConversion<string>()
+                .HasMaxLength(20);
 
             builder.HasOne(u => u.Manager)
                    .WithMany(u => u.Employees)
@@ -63,7 +62,7 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasData(
-            new User
+            new Employee
             {
                 Id = 1,
                 EmployeeCode = "EMP0001",
@@ -72,7 +71,7 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
                 Email = "admin@ems.com",
                 PhoneNumber = "9999999999",
                 PasswordHash = "$2a$12$j6rZXXE38.Thjp6aP1gqN.l5vhHT3Ym32VRq/ns4Edi3HQloOEAKO",
-                RoleId = 1,              // Admin
+                Role = Role.Admin,              // Admin
                 ManagerId = null,
                 TokenVersion = 0,
                 MustChangePassword = true,

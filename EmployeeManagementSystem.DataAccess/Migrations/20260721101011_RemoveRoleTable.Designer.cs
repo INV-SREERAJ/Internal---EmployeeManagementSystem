@@ -4,6 +4,7 @@ using EmployeeManagementSystem.DataAccess.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260721101011_RemoveRoleTable")]
+    partial class RemoveRoleTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -80,10 +83,8 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<int>("Role")
+                        .HasColumnType("int");
 
                     b.Property<int>("TokenVersion")
                         .ValueGeneratedOnAdd()
@@ -116,7 +117,7 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                             MustChangePassword = true,
                             PasswordHash = "$2a$12$j6rZXXE38.Thjp6aP1gqN.l5vhHT3Ym32VRq/ns4Edi3HQloOEAKO",
                             PhoneNumber = "9999999999",
-                            Role = "Admin",
+                            Role = 1,
                             TokenVersion = 0,
                             UpdatedAt = new DateTime(2026, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });

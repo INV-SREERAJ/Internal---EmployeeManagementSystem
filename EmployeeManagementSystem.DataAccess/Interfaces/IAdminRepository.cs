@@ -9,6 +9,11 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
 {
     public interface IAdminRepository
     {
-        Task<(IEnumerable<User> Users, int TotalCount)> GetUsersAsync(UserQueryParameters parameters);
+        Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters);
+
+        Task<Employee?> GetEmployeesByEmployeeCodeAsync(string employeeCode);
+
+        //enable/disable feature in admin
+        Task UpdateEmployeeAsync(Employee employee);
     }
 }
