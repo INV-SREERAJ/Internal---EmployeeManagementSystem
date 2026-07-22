@@ -122,37 +122,6 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                         });
                 });
 
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.PasswordResetToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiryTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PassWordResetTokens", (string)null);
-                });
-
             modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Employee", b =>
                 {
                     b.HasOne("EmployeeManagementSystem.DataAccess.Entities.Employee", "Manager")
@@ -163,22 +132,9 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                     b.Navigation("Manager");
                 });
 
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.PasswordResetToken", b =>
-                {
-                    b.HasOne("EmployeeManagementSystem.DataAccess.Entities.Employee", "Employee")
-                        .WithMany("PasswordResetTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Employee");
-                });
-
             modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Employee", b =>
                 {
                     b.Navigation("Employees");
-
-                    b.Navigation("PasswordResetTokens");
                 });
 #pragma warning restore 612, 618
         }

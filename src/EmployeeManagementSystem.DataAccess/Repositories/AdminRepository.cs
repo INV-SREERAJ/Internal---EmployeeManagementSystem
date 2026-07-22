@@ -22,7 +22,6 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         {
             var query = _context.Employees
                 .Where(u => !u.IsDeleted)
-                .Include(u => u.Role)
                 .Include(u => u.Manager)
                 .AsQueryable();
 

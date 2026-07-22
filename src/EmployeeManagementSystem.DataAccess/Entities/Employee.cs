@@ -32,7 +32,5 @@ namespace EmployeeManagementSystem.DataAccess.Entities
 
         public Employee? Manager { get; set; }
         public ICollection<Employee> Employees { get; set; } = new List<Employee>();
-        public ICollection<PasswordResetToken> PasswordResetTokens { get; set; }
-        = new List<PasswordResetToken>();
     }
 }

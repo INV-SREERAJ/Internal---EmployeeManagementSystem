@@ -36,5 +36,33 @@ namespace EmployeeManagementSystem.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpPatch("employees/{EmployeeCode}/status")]
+        public async Task<IActionResult> ChangeEmployeeStatus([FromBody] UpdateEmployeeStatusRequest statusRequest, [FromRoute] string EmployeeCode)
+        {
+            var currentEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
+            if (string.IsNullOrWhiteSpace(currentEmployeeCode))
+                return Unauthorized();
+
+            var statusChanged = await _adminService.UpdateEmployeeStatusAsync(EmployeeCode, statusRequest.IsActive, currentEmployeeCode);
+
+            if (!statusChanged)
+            {
+                return Ok(new
+                {
+                    Message = "The Status is already up to date"
+                }
+                );
+            }
+
+            return Ok(
+                new
+                {
+                    Message = statusRequest.IsActive
+                    ? "Employee enabled successfully."
+                    : "Employee disabled successfully."
+                }
+             );
+        }
     }
 }

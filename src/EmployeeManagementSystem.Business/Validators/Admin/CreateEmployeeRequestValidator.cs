@@ -17,8 +17,8 @@ namespace EmployeeManagementSystem.Business.Validators.Admin
             RuleFor(x => x.LastName)
                 .NotEmpty()
                 .WithMessage("Last name is required.")
-                .Length(2, 50)
-                .WithMessage("Last name must be between 2 and 50 characters.");
+                .Length(1, 50)
+                .WithMessage("Last name must be between 1 and 50 characters.");
 
             RuleFor(x => x.Email)
                 .NotEmpty()

@@ -14,8 +14,6 @@ namespace EmployeeManagementSystem.DataAccess.Context
         }
 
         public DbSet<Employee> Employees { get; set; }
-
-        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
