@@ -109,3 +109,5 @@ Desktop.ini
 
 
 *.zip
+
+src/EmployeeManagementSystem.Api/appsettings.Development.json

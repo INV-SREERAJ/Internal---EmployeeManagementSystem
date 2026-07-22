@@ -21,8 +21,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\EmployeeManagementSystem.Business\EmployeeManagementSystem.Business.csproj" />
-  </ItemGroup>
-
+	<ItemGroup>
+		<ProjectReference Include="..\EmployeeManagementSystem.Business\EmployeeManagementSystem.Business.csproj" />
+	</ItemGroup>
 </Project>
