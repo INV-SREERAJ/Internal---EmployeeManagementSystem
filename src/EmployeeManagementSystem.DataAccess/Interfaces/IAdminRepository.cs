@@ -11,7 +11,7 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
     {
         Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters);
 
-        Task<Employee?> GetEmployeesByEmployeeCodeAsync(string employeeCode);
+        Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode);
 
         //enable/disable feature in admin
         Task UpdateEmployeeAsync(Employee employee);

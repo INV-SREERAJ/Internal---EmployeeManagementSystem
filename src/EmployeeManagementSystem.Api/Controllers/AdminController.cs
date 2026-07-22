@@ -64,5 +64,36 @@ namespace EmployeeManagementSystem.Api.Controllers
                 }
              );
         }
+
+        [HttpGet("employees/{EmployeeCode}")]
+        public async Task<IActionResult> GetEmployee([FromRoute] string EmployeeCode)
+        {
+            var employee = await _adminService.GetEmployeeDetailsAsync(EmployeeCode);
+            return Ok(employee);
+        }
+
+        [HttpPut("employees/{EmployeeCode}")]
+        public async Task<IActionResult> EditEmployeeAsync([FromRoute] string EmployeeCode, [FromBody] UpdateEmployeeRequest request)
+        {
+            var employeeDetails = await _adminService.EditEmployeeAsync(EmployeeCode, request);
+            return Ok(employeeDetails);
+        }
+
+        [HttpDelete("employees/{EmployeeCode}")]
+        public async Task<IActionResult> DeleteEmployee([FromRoute]string EmployeeCode)
+        {
+            var currEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
+            if (string.IsNullOrWhiteSpace(currEmployeeCode))
+                return Unauthorized();
+
+
+            await _adminService.DeleteEmployeeAsync(EmployeeCode, currEmployeeCode);
+                return Ok(
+                    new
+                    {
+                        Message = "User Deleted Successfully!"
+                    }
+                    );
+        }
     }
 }
