@@ -245,8 +245,6 @@ namespace EmployeeManagementSystem.Business.Services
             employee.UpdatedAt = DateTime.UtcNow;
 
             await _adminRepository.UpdateEmployeeAsync(employee);
-
-            return true;
         }
     }
 }
