@@ -72,6 +72,9 @@ namespace EmployeeManagementSystem.Business.Services
                     MustChangePassword = false
                 };
             }
+            // Revoke all previous refresh tokens
+            employee.TokenVersion++;
+            await _employeeRepository.UpdateAsync(employee);
 
             // Login successful
             var tokens = _jwtService.GenerateTokens(employee);

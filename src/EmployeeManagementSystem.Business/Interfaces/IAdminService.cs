@@ -12,6 +12,14 @@ namespace EmployeeManagementSystem.Business.Interfaces
         Task<CreateEmployeeResponse> CreateEmployeeAsync(CreateEmployeeRequest request);
 
         Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters);
-        Task<bool> UpdateEmployeeStatusAsync(string employeeCode, bool isActive, string currentEmployeeEmployeeCode);
+        Task<bool> UpdateEmployeeStatusAsync(string employeeCode, bool isActive, string currentEmployeeCode);
+
+        Task<EmployeeDetailsResponseDto> GetEmployeeDetailsAsync(string employeeCode);
+
+        Task<EmployeeDetailsResponseDto> EditEmployeeAsync(string employeeCode, UpdateEmployeeRequest request);
+
+        Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode);
+
+        Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
     }
 }

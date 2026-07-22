@@ -127,15 +127,15 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
-        public async Task<bool> UpdateEmployeeStatusAsync(string employeeCode, bool isActive, string currentEmployeeEmployeeCode)
+        public async Task<bool> UpdateEmployeeStatusAsync(string employeeCode, bool isActive, string currentEmployeeCode)
         {
-            var employee = await _adminRepository.GetEmployeesByEmployeeCodeAsync(employeeCode);
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
             if (employee == null) {
                 throw new NotFoundException("The user is not found!!!");
             }
 
             //trying to change his own staus
-            if (!isActive && employee.EmployeeCode == currentEmployeeEmployeeCode)
+            if (!isActive && employee.EmployeeCode == currentEmployeeCode)
             {
                 throw new ConflictException("You cannot disable your own account.");
             }
@@ -156,6 +156,137 @@ namespace EmployeeManagementSystem.Business.Services
             return true;
         }
 
-       
+        public async Task<EmployeeDetailsResponseDto> GetEmployeeDetailsAsync(string employeeCode)
+        {
+            var employee =  await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
+            if(employee == null)
+            {
+                throw new NotFoundException("There is no such employee!");
+            }
+            return new EmployeeDetailsResponseDto
+            {
+                EmployeeCode = employeeCode,
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                Email = employee.Email,
+                PhoneNumber = employee.PhoneNumber,
+                Role = employee.Role.ToString(),
+                IsActive = employee.IsActive,
+                CreatedAt = employee.CreatedAt,
+                UpdatedAt = employee.UpdatedAt
+            };
+        }
+
+        public async Task<EmployeeDetailsResponseDto> EditEmployeeAsync(string employeeCode, UpdateEmployeeRequest request)
+        {
+            
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
+            if (employee == null)
+                throw new NotFoundException("The Employee is not found, kindly check the Employee Code");
+
+            //admin cant change his role (only 1 admin and if role changes the system breaks)
+            if (employee.Role == Role.Admin && request.Role != Role.Admin)
+            {
+                throw new ConflictException("The only admin cannot be changed to another role.");
+            }
+
+            // check if the email is already present (excluding the current email)
+            if (!employee.Email.Equals(request.Email, StringComparison.OrdinalIgnoreCase))
+            {
+                if (await _employeeRepository.EmailExistsAsync(request.Email))
+                    throw new ConflictException("Email already exists.");
+            }
+
+            if (request.Role == Role.Admin)
+                throw new ConflictException("Cant change an Employee to Admin");
+
+            employee.FirstName = request.FirstName;
+            employee.LastName = request.LastName;
+            employee.PhoneNumber = request.PhoneNumber;
+            employee.Email = request.Email;
+            employee.Role = request.Role;
+
+            employee.UpdatedAt = DateTime.UtcNow;
+
+            await _adminRepository.UpdateEmployeeAsync(employee);
+
+            return new EmployeeDetailsResponseDto
+            {
+                FirstName = employee.FirstName,
+                LastName = employee.LastName,
+                Email= employee.Email,
+                EmployeeCode = employee.EmployeeCode,
+                PhoneNumber= employee.PhoneNumber,
+                Role= employee.Role.ToString(),
+                IsActive= employee.IsActive,
+                CreatedAt= employee.CreatedAt,
+                UpdatedAt= employee.UpdatedAt
+            };
+        }
+
+        public async Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode)
+        {
+
+            if (currentEmployeeCode == employeeCode)
+                throw new ConflictException("You cant delete your own account!");
+
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
+            if (employee == null)
+                throw new NotFoundException("Employee not found. Please check the EmployeeCode");
+
+            if (employee.IsDeleted)
+                throw new ConflictException("Employee is already deleted.");
+            if (employee.Role == Role.Admin)
+                throw new ConflictException("Admin account cannot be deleted.");
+
+            employee.IsDeleted = true;
+            employee.IsActive = false;
+            employee.TokenVersion++;
+            employee.UpdatedAt = DateTime.UtcNow;
+
+            await _adminRepository.UpdateEmployeeAsync(employee);
+        }
+
+        public async Task ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode)
+        {
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
+            if (employee == null)
+                throw new NotFoundException("Employee not found please check the EmployeeCode");
+            var manager = await _adminRepository.GetEmployeeByEmployeeCodeAsync(managerEmployeeCode);
+            if(manager == null)
+                throw new NotFoundException("Manager not found please check the EmployeeCode");
+
+            if (employeeCode == managerEmployeeCode)
+                throw new ConflictException("Manager and employee has to be differnet");
+
+            if (manager.Role != Role.Admin && manager.Role != Role.Manager)
+            {
+                throw new ConflictException("This employee cannot be a manager.");
+            }
+
+            if (!manager.IsActive || manager.IsDeleted)
+            {
+                throw new ConflictException("Selected manager is inactive.");
+            }
+
+            
+
+            //if (employee.Role == Role.Manager && manager.Role != Role.Admin)
+            //    throw new ConflictException("Manager can only have admin as manager");
+
+            if (employee.Role == Role.Admin)
+                throw new ConflictException("Admin cannot have a manager");
+
+            if (employee.ManagerId == manager.Id)
+            {
+                throw new ConflictException("Employee is already assigned to this manager.");
+            }
+
+            employee.ManagerId = manager.Id;
+            employee.UpdatedAt = DateTime.UtcNow;
+
+            await _adminRepository.UpdateEmployeeAsync(employee);
+            
+        }
     }
 }

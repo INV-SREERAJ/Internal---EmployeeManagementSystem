@@ -88,7 +88,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             _context.Employees.Update(employee);
             await _context.SaveChangesAsync();
         }
-        public async Task<Employee?> GetEmployeesByEmployeeCodeAsync(string employeeCode)
+        public async Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode)
         {
             return await _context.Employees
                 .FirstOrDefaultAsync(u =>
