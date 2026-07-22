@@ -246,5 +246,47 @@ namespace EmployeeManagementSystem.Business.Services
 
             await _adminRepository.UpdateEmployeeAsync(employee);
         }
+
+        public async Task ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode)
+        {
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
+            if (employee == null)
+                throw new NotFoundException("Employee not found please check the EmployeeCode");
+            var manager = await _adminRepository.GetEmployeeByEmployeeCodeAsync(managerEmployeeCode);
+            if(manager == null)
+                throw new NotFoundException("Manager not found please check the EmployeeCode");
+
+            if (employeeCode == managerEmployeeCode)
+                throw new ConflictException("Manager and employee has to be differnet");
+
+            if (manager.Role != Role.Admin && manager.Role != Role.Manager)
+            {
+                throw new ConflictException("This employee cannot be a manager.");
+            }
+
+            if (!manager.IsActive || manager.IsDeleted)
+            {
+                throw new ConflictException("Selected manager is inactive.");
+            }
+
+            
+
+            //if (employee.Role == Role.Manager && manager.Role != Role.Admin)
+            //    throw new ConflictException("Manager can only have admin as manager");
+
+            if (employee.Role == Role.Admin)
+                throw new ConflictException("Admin cannot have a manager");
+
+            if (employee.ManagerId == manager.Id)
+            {
+                throw new ConflictException("Employee is already assigned to this manager.");
+            }
+
+            employee.ManagerId = manager.Id;
+            employee.UpdatedAt = DateTime.UtcNow;
+
+            await _adminRepository.UpdateEmployeeAsync(employee);
+            
+        }
     }
 }

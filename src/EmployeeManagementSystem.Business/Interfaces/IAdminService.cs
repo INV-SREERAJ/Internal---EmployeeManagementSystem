@@ -19,5 +19,7 @@ namespace EmployeeManagementSystem.Business.Interfaces
         Task<EmployeeDetailsResponseDto> EditEmployeeAsync(string employeeCode, UpdateEmployeeRequest request);
 
         Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode);
+
+        Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
     }
 }
