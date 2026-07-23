@@ -21,5 +21,7 @@ namespace EmployeeManagementSystem.Business.Interfaces
         Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode);
 
         Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
+
+        Task<PagedResponse<EmployeeListDto>> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters);
     }
 }

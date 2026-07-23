@@ -24,4 +24,8 @@
 	<ItemGroup>
 		<ProjectReference Include="..\EmployeeManagementSystem.Business\EmployeeManagementSystem.Business.csproj" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Extensions\" />
+	</ItemGroup>
 </Project>

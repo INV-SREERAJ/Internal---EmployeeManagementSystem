@@ -18,11 +18,11 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
 
         
 
-        public async Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters)
+        private async Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesInternalAsync(EmployeeQueryParameters parameters, bool isDeleted)
         {
             var query = _context.Employees
-                .Where(u => !u.IsDeleted)
-                .Include(u => u.Manager)
+                .Where(e => e.IsDeleted == isDeleted)
+                .Include(e => e.Manager)
                 .AsQueryable();
 
             // Search
@@ -30,11 +30,11 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             {
                 var search = parameters.Search.Trim();
 
-                query = query.Where(u =>
-                    u.EmployeeCode.Contains(search) ||
-                    u.FirstName.Contains(search) ||
-                    u.LastName.Contains(search) ||
-                    u.Email.Contains(search));
+                query = query.Where(e =>
+                    e.EmployeeCode.Contains(search) ||
+                    e.FirstName.Contains(search) ||
+                    e.LastName.Contains(search) ||
+                    e.Email.Contains(search));
             }
 
             // Filter by Role
@@ -46,7 +46,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             // Filter by Status
             if (parameters.IsActive.HasValue)
             {
-                query = query.Where(u => u.IsActive == parameters.IsActive.Value);
+                query = query.Where(e => e.IsActive == parameters.IsActive.Value);
             }
 
             // Sorting
@@ -96,6 +96,17 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                     !u.IsDeleted);
         }
 
-        
+
+        //get all available employees
+        public Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters)
+        {
+            return GetEmployeesInternalAsync(parameters, false);
+        }
+
+        //list delted employees
+        public Task<(IEnumerable<Employee> employees, int TotalCount)> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters)
+        {
+            return GetEmployeesInternalAsync(parameters, true);
+        }
     }
 }

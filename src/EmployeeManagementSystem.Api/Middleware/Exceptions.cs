@@ -30,6 +30,12 @@ namespace EmployeeManagementSystem.Api.Middleware
                     context,
                     StatusCodes.Status404NotFound, ex.Message);
             }
+            catch(UnAuthorizedException ex)
+            {
+                await HandleExceptionAsync(
+                        context,
+                        StatusCodes.Status401Unauthorized, ex.Message);
+            }
             catch (Exception ex)
             {
                 await HandleExceptionAsync(

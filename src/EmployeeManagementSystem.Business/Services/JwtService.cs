@@ -22,22 +22,43 @@ namespace EmployeeManagementSystem.Business.Services
             _jwtSettings = jwtOptions.Value;
         }
 
-        public TokenResponseDto GenerateTokens(Employee employee)
+        
+
+        //public string GenerateRefreshToken(Employee employee)
+        //{
+        //    throw new NotImplementedException();
+        //}
+
+        public TokenResponseDto GenerateTokenPair(Employee employee)
         {
             var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);
             var refreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
 
-            var accessToken = GenerateAccessToken(employee, accessTokenExpiry);
-            var refreshToken = GenerateRefreshToken(employee, refreshTokenExpiry);
 
             return new TokenResponseDto
             {
-                AccessToken = accessToken,
-                RefreshToken = refreshToken,
-                AccessTokenExpiresAt = accessTokenExpiry,
-                RefreshTokenExpiresAt = refreshTokenExpiry
+                AccessToken = GenerateAccessToken(employee, accessTokenExpiry),
+                RefreshToken = GenerateRefreshToken(employee, refreshTokenExpiry),
+                AccessTokenExpiresAt = accessTokenExpiry
             };
         }
+
+        //public TokenResponseDto GenerateTokens(Employee employee)
+        //{
+        //    var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);
+        //    var refreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
+
+        //    var accessToken = GenerateAccessToken(employee, accessTokenExpiry);
+        //    var refreshToken = GenerateRefreshToken(employee, refreshTokenExpiry);
+
+        //    return new TokenResponseDto
+        //    {
+        //        AccessToken = accessToken,
+        //        RefreshToken = refreshToken,
+        //        AccessTokenExpiresAt = accessTokenExpiry,
+        //        RefreshTokenExpiresAt = refreshTokenExpiry
+        //    };
+        //}
 
         public ClaimsPrincipal? GetPrincipalFromToken(string token)
         {
@@ -77,7 +98,7 @@ namespace EmployeeManagementSystem.Business.Services
             return expiresAt <= DateTime.UtcNow.AddHours(24);
         }
 
-        private string GenerateAccessToken(Employee employee, DateTime expiresAt)
+        public string GenerateAccessToken(Employee employee, DateTime expiresAt)
         {
             var claims = new List<Claim>
             {
@@ -107,7 +128,7 @@ namespace EmployeeManagementSystem.Business.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        private string GenerateRefreshToken(Employee employee, DateTime expiresAt)
+        public string GenerateRefreshToken(Employee employee, DateTime expiresAt)
         {
             var claims = new List<Claim>
             {
@@ -135,6 +156,16 @@ namespace EmployeeManagementSystem.Business.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        
+        public TokenResponseDto GenerateAccessTokenOnly(Employee employee)
+        {
+            var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);
+
+            return new TokenResponseDto
+            {
+                AccessToken = GenerateAccessToken(employee, accessTokenExpiry),
+                RefreshToken = null,
+                AccessTokenExpiresAt = accessTokenExpiry
+            };
+        }
     }
 }
