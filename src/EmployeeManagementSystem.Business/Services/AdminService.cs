@@ -8,6 +8,7 @@ using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace EmployeeManagementSystem.Business.Services
@@ -19,13 +20,17 @@ namespace EmployeeManagementSystem.Business.Services
         private readonly IEmailService _emailService;
         //private readonly IRoleRepository _roleRepository;
         private readonly IAdminRepository _adminRepository;
-        public AdminService(IEmployeeRepository employeeRepository, IPasswordService passwordService, IEmailService emailService, IAdminRepository adminRepository)
+        private readonly IEmployeeCodeGenerator _employeeCodeGenerator;
+
+
+        public AdminService(IEmployeeRepository employeeRepository, IPasswordService passwordService, IEmailService emailService, IAdminRepository adminRepository, IEmployeeCodeGenerator employeeCodeGenerator)
         {
             _employeeRepository = employeeRepository;
             _passwordService = passwordService;
             _emailService = emailService;
             //_roleRepository = roleRepository;
             _adminRepository = adminRepository;
+            _employeeCodeGenerator = employeeCodeGenerator;
         }
 
         //create employee
@@ -85,7 +90,10 @@ namespace EmployeeManagementSystem.Business.Services
                 UpdatedAt = DateTime.UtcNow
             };
             await _employeeRepository.AddEmployeeAsync(employee);
-            employee.EmployeeCode = $"EMP{(employee.Id + 1120):D5}";
+
+
+            employee.EmployeeCode = await _employeeCodeGenerator.GenerateEmployeeCodeAsync(request.Role);
+
             await _employeeRepository.UpdateAsync(employee);
             await _emailService.WelcomeEmailAsync(
                 employee.Email,

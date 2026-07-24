@@ -108,5 +108,16 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         {
             return GetEmployeesInternalAsync(parameters, true);
         }
+
+        public async Task<string?> GetLastEmployeeCodeAsync(string prefix, int year)
+        {
+            string pattern = $"{prefix}{year}";
+
+            return await _context.Employees
+                .Where(e => e.EmployeeCode.StartsWith(pattern))
+                .OrderByDescending(e => e.EmployeeCode)
+                .Select(e => e.EmployeeCode)
+                .FirstOrDefaultAsync();
+        }
     }
 }
