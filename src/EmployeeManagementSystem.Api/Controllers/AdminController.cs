@@ -30,7 +30,7 @@ namespace EmployeeManagementSystem.Api.Controllers
                 response);
         }
 
-        //get all employees
+        //get all  available employees
         [HttpGet("employees")]
         public async Task<IActionResult> GetEmployees([FromQuery] EmployeeQueryParameters parameters)
         {
@@ -39,6 +39,32 @@ namespace EmployeeManagementSystem.Api.Controllers
             return Ok(result);
         }
 
+        //get deleted employees
+        [HttpGet("employees/deleted")]
+        public async Task<IActionResult> GetDeletedEmployees([FromQuery] EmployeeQueryParameters parameters)
+        {
+            var result = await _adminService.GetDeletedEmployeesAsync(parameters);
+            return Ok(result);
+        }
+
+        //get employee by EmployeeCode
+        [HttpGet("employees/{EmployeeCode}")]
+        public async Task<IActionResult> GetEmployee([FromRoute] string EmployeeCode)
+        {
+            var employee = await _adminService.GetEmployeeDetailsAsync(EmployeeCode);
+            return Ok(employee);
+        }
+        
+
+
+
+        //update an employee
+        [HttpPut("employees/{EmployeeCode}")]
+        public async Task<IActionResult> EditEmployeeAsync([FromRoute] string EmployeeCode, [FromBody] UpdateEmployeeRequest request)
+        {
+            var employeeDetails = await _adminService.EditEmployeeAsync(EmployeeCode, request);
+            return Ok(employeeDetails);
+        }
 
         //change status
         [HttpPatch("employees/{EmployeeCode}/status")]
@@ -69,22 +95,21 @@ namespace EmployeeManagementSystem.Api.Controllers
              );
         }
 
-        //get employee by EmployeeCode
-        [HttpGet("employees/{EmployeeCode}")]
-        public async Task<IActionResult> GetEmployee([FromRoute] string EmployeeCode)
-        {
-            var employee = await _adminService.GetEmployeeDetailsAsync(EmployeeCode);
-            return Ok(employee);
-        }
 
 
-        //update an employee
-        [HttpPut("employees/{EmployeeCode}")]
-        public async Task<IActionResult> EditEmployeeAsync([FromRoute] string EmployeeCode, [FromBody] UpdateEmployeeRequest request)
+        //change reporting manager.
+        [HttpPatch("employees/{EmployeeCode}/manager")]
+        public async Task<IActionResult> ChangeReportingManager([FromRoute] string EmployeeCode, [FromBody] string managerEmployeeCode)
         {
-            var employeeDetails = await _adminService.EditEmployeeAsync(EmployeeCode, request);
-            return Ok(employeeDetails);
+            await _adminService.ChangeReportingManagerAsync(EmployeeCode, managerEmployeeCode);
+            return Ok(
+                new
+                {
+                    Message = "Reporting manager has been successfully changed"
+                }
+            );
         }
+
 
 
         //soft delete an employee
@@ -106,17 +131,9 @@ namespace EmployeeManagementSystem.Api.Controllers
         }
 
 
-        //change reporting manager.
-        [HttpPatch("employees/{EmployeeCode}/manager")]
-        public async Task<IActionResult> ChangeReportingManager([FromRoute] string EmployeeCode, [FromBody] string managerEmployeeCode)
-        {
-            await _adminService.ChangeReportingManagerAsync(EmployeeCode, managerEmployeeCode);
-            return Ok(
-                new
-                {
-                    Message = "Reporting manager has been successfully changed"
-                }
-                );
-        }
+        
+
+
+        
     }
 }

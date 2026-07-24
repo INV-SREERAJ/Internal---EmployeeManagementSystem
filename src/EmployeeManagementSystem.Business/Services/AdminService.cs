@@ -8,6 +8,7 @@ using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace EmployeeManagementSystem.Business.Services
@@ -19,14 +20,20 @@ namespace EmployeeManagementSystem.Business.Services
         private readonly IEmailService _emailService;
         //private readonly IRoleRepository _roleRepository;
         private readonly IAdminRepository _adminRepository;
-        public AdminService(IEmployeeRepository employeeRepository, IPasswordService passwordService, IEmailService emailService, IAdminRepository adminRepository)
+        private readonly IEmployeeCodeGenerator _employeeCodeGenerator;
+
+
+        public AdminService(IEmployeeRepository employeeRepository, IPasswordService passwordService, IEmailService emailService, IAdminRepository adminRepository, IEmployeeCodeGenerator employeeCodeGenerator)
         {
             _employeeRepository = employeeRepository;
             _passwordService = passwordService;
             _emailService = emailService;
             //_roleRepository = roleRepository;
             _adminRepository = adminRepository;
+            _employeeCodeGenerator = employeeCodeGenerator;
         }
+
+        //create employee
         public async Task<CreateEmployeeResponse> CreateEmployeeAsync(CreateEmployeeRequest request)
         {
             var emailExists = await _employeeRepository.EmailExistsAsync(request.Email);
@@ -83,7 +90,10 @@ namespace EmployeeManagementSystem.Business.Services
                 UpdatedAt = DateTime.UtcNow
             };
             await _employeeRepository.AddEmployeeAsync(employee);
-            employee.EmployeeCode = $"EMP{(employee.Id + 1120):D5}";
+
+
+            employee.EmployeeCode = await _employeeCodeGenerator.GenerateEmployeeCodeAsync(request.Role);
+
             await _employeeRepository.UpdateAsync(employee);
             await _emailService.WelcomeEmailAsync(
                 employee.Email,
@@ -99,6 +109,7 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
+        // get all employees including paging
         public async Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters)
         {
             var (employees, totalCount) =
@@ -177,6 +188,8 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
+
+        // edit an employee
         public async Task<EmployeeDetailsResponseDto> EditEmployeeAsync(string employeeCode, UpdateEmployeeRequest request)
         {
             
@@ -224,6 +237,7 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
+        //delete an employee
         public async Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode)
         {
 
@@ -247,6 +261,8 @@ namespace EmployeeManagementSystem.Business.Services
             await _adminRepository.UpdateEmployeeAsync(employee);
         }
 
+
+        // change manager
         public async Task ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode)
         {
             var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
@@ -288,5 +304,36 @@ namespace EmployeeManagementSystem.Business.Services
             await _adminRepository.UpdateEmployeeAsync(employee);
             
         }
+
+
+        //list deletedemployees
+        public async Task<PagedResponse<EmployeeListDto>> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters)
+        {
+            var (employees, totalCount) = await _adminRepository.GetDeletedEmployeesAsync(parameters);
+
+            var employeeDtos = employees.Select(employee => new EmployeeListDto
+            {
+                EmployeeCode = employee.EmployeeCode,
+                FullName = $"{employee.FirstName} {employee.LastName}",
+                Email = employee.Email,
+                PhoneNumber = employee.PhoneNumber,
+                Role = employee.Role.ToString(),
+                ManagerName = employee.Manager == null
+                ? null
+                : $"{employee.Manager.FirstName} {employee.Manager.LastName}",
+                IsActive = employee.IsActive
+            });
+
+            return new PagedResponse<EmployeeListDto>
+            {
+                Data = employeeDtos,
+                PageNumber = parameters.PageNumber,
+                PageSize = parameters.PageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize)
+            };
+        }
+
+        
     }
 }

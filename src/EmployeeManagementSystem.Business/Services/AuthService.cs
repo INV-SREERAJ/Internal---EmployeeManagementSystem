@@ -1,5 +1,8 @@
 ﻿
+using Azure;
+using EmployeeManagementSystem.Business.Configuration;
 using EmployeeManagementSystem.Business.DTOs.Auth;
+using EmployeeManagementSystem.Business.DTOs.EmployeeManagementSystem.Business.DTOs.Authentication;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using System.Security.Claims;
@@ -77,7 +80,7 @@ namespace EmployeeManagementSystem.Business.Services
             await _employeeRepository.UpdateAsync(employee);
 
             // Login successful
-            var tokens = _jwtService.GenerateTokens(employee);
+            var tokens = _jwtService.GenerateTokenPair(employee);
 
             return new LoginResponseDto
             {
@@ -187,29 +190,38 @@ namespace EmployeeManagementSystem.Business.Services
             var shouldRotate =
                 _jwtService.ShouldRotateRefreshToken(request.RefreshToken);
 
+            RefreshTokenResponseDto response;
+
             if (shouldRotate)
             {
                 employee.TokenVersion++;
 
                 await _employeeRepository.UpdateAsync(employee);
+
+                var tokens = _jwtService.GenerateTokenPair(employee);
+
+                response = new RefreshTokenResponseDto
+                {
+                    Success = true,
+                    Message = "Token refreshed successfully.",
+                    AccessToken = tokens.AccessToken,
+                    RefreshToken = tokens.RefreshToken,
+                    ExpiresAt = tokens.AccessTokenExpiresAt
+                };
             }
-
-            var tokens = _jwtService.GenerateTokens(employee);
-            
-            //everything succeeds and proceeding to create tokens.
-            var response =  new RefreshTokenResponseDto
+            else
             {
-                Success = true,
-                Message = "Token refreshed successfully.",
+                var tokens = _jwtService.GenerateAccessTokenOnly(employee);
 
-                AccessToken = tokens.AccessToken,
-
-                RefreshToken = shouldRotate
-                    ? tokens.RefreshToken
-                    : null,
-
-                ExpiresAt = tokens.AccessTokenExpiresAt
-            };
+                response = new RefreshTokenResponseDto
+                {
+                    Success = true,
+                    Message = "Token refreshed successfully.",
+                    AccessToken = tokens.AccessToken,
+                    RefreshToken = null,
+                    ExpiresAt = tokens.AccessTokenExpiresAt
+                };
+            }
 
             //storing the tokens in cache to tackle the network race conditions
             _graceCache.Set(

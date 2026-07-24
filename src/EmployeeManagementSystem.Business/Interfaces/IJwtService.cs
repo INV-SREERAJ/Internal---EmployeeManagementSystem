@@ -11,7 +11,10 @@ namespace EmployeeManagementSystem.Business.Interfaces
     {
 
         ClaimsPrincipal? GetPrincipalFromToken(string token);
-        TokenResponseDto GenerateTokens(Employee employee);
+        string GenerateAccessToken(Employee employee, DateTime expiresAt);
+        string GenerateRefreshToken(Employee employee, DateTime expiresAt);
+        TokenResponseDto GenerateTokenPair(Employee employee);
         bool ShouldRotateRefreshToken(string refreshToken);
+        TokenResponseDto GenerateAccessTokenOnly(Employee employee);
     }
 }

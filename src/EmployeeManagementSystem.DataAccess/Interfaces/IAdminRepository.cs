@@ -11,9 +11,13 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
     {
         Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters);
 
+        Task<(IEnumerable<Employee> employees, int TotalCount)> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters);
+
         Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode);
 
         //enable/disable feature in admin
         Task UpdateEmployeeAsync(Employee employee);
+
+        Task<string?> GetLastEmployeeCodeAsync(string prefix, int year);
     }
 }
