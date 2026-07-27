@@ -62,7 +62,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPut("employees/{EmployeeCode}")]
         public async Task<IActionResult> EditEmployeeAsync([FromRoute] string EmployeeCode, [FromBody] UpdateEmployeeRequest request)
         {
-            var employeeDetails = await _adminService.EditEmployeeAsync(EmployeeCode, request);
+            var employeeDetails = await _adminService.UpdateEmployeeAsync(EmployeeCode, request);
             return Ok(employeeDetails);
         }
 

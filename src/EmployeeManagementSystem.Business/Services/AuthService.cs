@@ -1,10 +1,10 @@
 ﻿
-using Azure;
 using EmployeeManagementSystem.Business.Configuration;
 using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.DTOs.EmployeeManagementSystem.Business.DTOs.Authentication;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Interfaces;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 
 namespace EmployeeManagementSystem.Business.Services
@@ -15,22 +15,29 @@ namespace EmployeeManagementSystem.Business.Services
         private readonly IPasswordService _passwordHasher;
         private readonly IJwtService _jwtService;
         private readonly IRefreshTokenGraceCache _graceCache;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(IEmployeeRepository employeeRepository, IPasswordService passwordHasher, IJwtService jwtService, IRefreshTokenGraceCache cache)
+        public AuthService(IEmployeeRepository employeeRepository, IPasswordService passwordHasher, IJwtService jwtService, IRefreshTokenGraceCache cache, ILogger<AuthService> logger)
         {
             _employeeRepository = employeeRepository;
             _passwordHasher = passwordHasher;
             _jwtService = jwtService;
             _graceCache = cache;
+            _logger = logger;
         }
 
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
+            _logger.LogInformation("Login attempt for {Email}",request.Email);
+
             var employee = await _employeeRepository.GetByEmailAsync(request.Email);
 
             // User not found
             if (employee == null)
             {
+                _logger.LogWarning(
+                    "Login failed. Employee not found for {Email}",
+                     request.Email);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -46,6 +53,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (!isPasswordValid)
             {
+                _logger.LogWarning("Invalid password for {Email}",request.Email);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -57,6 +65,7 @@ namespace EmployeeManagementSystem.Business.Services
             // Check if account is deleted
             if (employee.IsDeleted)
             {
+                _logger.LogWarning("Deleted employee attempted login. EmployeeCode: {EmployeeCode}",employee.EmployeeCode);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -68,6 +77,7 @@ namespace EmployeeManagementSystem.Business.Services
             // Check if account is inactive
             if (!employee.IsActive)
             {
+                _logger.LogWarning("Inactive employee attempted login. EmployeeCode: {EmployeeCode}",employee.EmployeeCode);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -75,7 +85,12 @@ namespace EmployeeManagementSystem.Business.Services
                     MustChangePassword = false
                 };
             }
+
+            //successful login
+            _logger.LogInformation("Employee {EmployeeCode} logged in successfully",employee.EmployeeCode);
+
             // Revoke all previous refresh tokens
+            _logger.LogInformation("Revoking previous refresh tokens for {EmployeeCode}", employee.EmployeeCode);
             employee.TokenVersion++;
             await _employeeRepository.UpdateAsync(employee);
 
@@ -95,6 +110,7 @@ namespace EmployeeManagementSystem.Business.Services
         public async Task<RefreshTokenResponseDto> RefreshTokenAsync(
     RefreshTokenRequestDto request)
         {
+            _logger.LogInformation("Refresh token request received.");
 
             //checking if there were already accesstoken-refresh token generated in 5 
             //(checking in memory cache.)
@@ -102,6 +118,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (cached != null)
             {
+                _logger.LogInformation("Refresh token served from grace cache.");
                 return cached;
             }
             ClaimsPrincipal? principal;
@@ -111,8 +128,12 @@ namespace EmployeeManagementSystem.Business.Services
                 //taking the pricipal from the token passed
                 principal = _jwtService.GetPrincipalFromToken(request.RefreshToken);
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.LogWarning(
+                ex,
+                "Invalid refresh token received."); 
+
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -122,6 +143,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (principal == null)
             {
+
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -133,6 +155,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (tokenType != "Refresh")
             {
+                _logger.LogWarning("Refresh failed because token type was invalid.");
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -144,6 +167,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (string.IsNullOrWhiteSpace(employeeCode))
             {
+                _logger.LogWarning("Refresh failed because EmployeeCode claim was missing.");
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -165,6 +189,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (!employee.IsActive || employee.IsDeleted)
             {
+                _logger.LogWarning("Refresh denied for inactive employee {EmployeeCode}.",employee.EmployeeCode);
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -180,6 +205,7 @@ namespace EmployeeManagementSystem.Business.Services
             //checking if the tokenversion in refresh token is matching the one in the db
             if (tokenVersion != employee.TokenVersion)
             {
+                _logger.LogWarning("Refresh token revoked for {EmployeeCode}.",employee.EmployeeCode);
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -194,6 +220,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (shouldRotate)
             {
+                _logger.LogInformation("Refresh token rotated for {EmployeeCode}.",employee.EmployeeCode);
                 employee.TokenVersion++;
 
                 await _employeeRepository.UpdateAsync(employee);
@@ -211,6 +238,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
             else
             {
+                _logger.LogInformation("Access token regenerated for {EmployeeCode}.",employee.EmployeeCode);
                 var tokens = _jwtService.GenerateAccessTokenOnly(employee);
 
                 response = new RefreshTokenResponseDto
@@ -228,7 +256,7 @@ namespace EmployeeManagementSystem.Business.Services
             request.RefreshToken,
             response,
             TimeSpan.FromSeconds(5));
-
+            _logger.LogDebug("Refresh response cached for grace period.");
             return response;
         }
     }

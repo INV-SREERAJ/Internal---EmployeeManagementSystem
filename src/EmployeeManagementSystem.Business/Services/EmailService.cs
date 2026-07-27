@@ -7,62 +7,79 @@ using System.Text;
 using MimeKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
+using Microsoft.Extensions.Logging;
 
 namespace EmployeeManagementSystem.Business.Services
 {
     public class EmailService : IEmailService
     {
         private readonly EmailSettings _emailSettings;
-
-        public EmailService(IOptions<EmailSettings> emailSettings)
+        private readonly ILogger<EmailService> _logger;
+        public EmailService(IOptions<EmailSettings> emailSettings, ILogger<EmailService> logger)
         {
             _emailSettings = emailSettings.Value;
+            _logger = logger;
         }
         public async Task WelcomeEmailAsync(string email, string fullName, string tempPassword)
         {
-            var message = new MimeMessage();
-
-            message.From.Add(new MailboxAddress(
-                _emailSettings.FromName,
-                _emailSettings.FromEmail));
-
-            message.To.Add(MailboxAddress.Parse(email));
-
-            message.Subject = "Welcome to Employee Management System";
-
-            message.Body = new TextPart("html")
+            try
             {
-                Text = $@"
-                <h2>Welcome, {fullName}!</h2>
+                var message = new MimeMessage();
 
-                <p>Your account has been created successfully.</p>
+                message.From.Add(new MailboxAddress(
+                    _emailSettings.FromName,
+                    _emailSettings.FromEmail));
 
-                <p><strong>Email:</strong> {email}</p>
+                message.To.Add(MailboxAddress.Parse(email));
 
-                <p><strong>Temporary Password:</strong> {tempPassword}</p>
+                message.Subject = "Welcome to Employee Management System";
 
-                <p>Please login and change your password immediately.</p>
+                message.Body = new TextPart("html")
+                {
+                    Text = $@"
+            <h2>Welcome, {fullName}!</h2>
 
-                <br/>
+            <p>Your account has been created successfully.</p>
 
-                <p>Regards,</p>
-                <p>Employee Management System</p>"
-            };
+            <p><strong>Email:</strong> {email}</p>
 
-            using var smtp = new SmtpClient();
+            <p><strong>Temporary Password:</strong> {tempPassword}</p>
 
-            await smtp.ConnectAsync(
-                _emailSettings.Host,
-                _emailSettings.Port,
-                SecureSocketOptions.StartTls);
+            <p>Please login and change your password immediately.</p>
 
-            await smtp.AuthenticateAsync(
-                _emailSettings.Username,
-                _emailSettings.Password);
+            <br/>
 
-            await smtp.SendAsync(message);
+            <p>Regards,</p>
+            <p>Employee Management System</p>"
+                };
 
-            await smtp.DisconnectAsync(true);
+                using var smtp = new SmtpClient();
+
+
+                _logger.LogInformation("Sending onboarding email to {Email}", email);
+                await smtp.ConnectAsync(
+                    _emailSettings.Host,
+                    _emailSettings.Port,
+                    SecureSocketOptions.StartTls);
+
+                await smtp.AuthenticateAsync(
+                    _emailSettings.Username,
+                    _emailSettings.Password);
+
+                await smtp.SendAsync(message);
+
+                _logger.LogInformation("Onboarding email sent successfully to {Email}", email);
+
+                await smtp.DisconnectAsync(true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Failed to send onboarding email to {Email}",
+                    email);
+
+                throw;
+            }
         }
     }
 }
