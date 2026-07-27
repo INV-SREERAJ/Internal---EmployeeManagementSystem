@@ -65,7 +65,7 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
             new Employee
             {
                 Id = 1,
-                EmployeeCode = "EMP0001",
+                EmployeeCode = "ADM20260001",
                 FirstName = "System",
                 LastName = "Admin",
                 Email = "admin@ems.com",

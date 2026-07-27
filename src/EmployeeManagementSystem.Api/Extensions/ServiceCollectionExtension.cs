@@ -16,6 +16,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();
         services.AddScoped<IProfileRepository, ProfileRepository>();
+        services.AddScoped<IManagerRepository, ManagerRepository>();
 
         // Services
         services.AddScoped<IAdminService, AdminService>();
@@ -24,6 +25,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IEmployeeCodeGenerator, EmployeeCodeGenerator>();
         services.AddScoped<IPasswordService, PasswordService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IManagerService, ManagerService>();
 
         services.Configure<EmailSettings>(
             configuration.GetSection("EmailSettings"));

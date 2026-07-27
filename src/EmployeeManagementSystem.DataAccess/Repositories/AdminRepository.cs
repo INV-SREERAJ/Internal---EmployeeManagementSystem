@@ -83,7 +83,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             return (employees, totalCount);
         }
 
-        public async Task UpdateEmployeeAsync(Employee employee)
+        public async Task SaveChangesAsync(Employee employee)
         {
             _context.Employees.Update(employee);
             await _context.SaveChangesAsync();

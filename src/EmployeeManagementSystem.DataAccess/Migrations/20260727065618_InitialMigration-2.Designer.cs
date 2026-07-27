@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EmployeeManagementSystem.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260716040359_changedDefaultAdminPassword")]
-    partial class changedDefaultAdminPassword
+    [Migration("20260727065618_InitialMigration-2")]
+    partial class InitialMigration2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,80 +25,7 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.PasswordResetToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("ExpiryTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("PassWordResetTokens", (string)null);
-                });
-
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Role", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Description = "System Administrator",
-                            Name = "Admin"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Description = "Reporting Manager",
-                            Name = "Manager"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Description = "Employee",
-                            Name = "Employee"
-                        });
-                });
-
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.User", b =>
+            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Employee", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -156,8 +83,10 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("TokenVersion")
                         .ValueGeneratedOnAdd()
@@ -174,9 +103,7 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
 
                     b.HasIndex("ManagerId");
 
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Employees", (string)null);
 
                     b.HasData(
                         new
@@ -184,7 +111,7 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2026, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@ems.com",
-                            EmployeeCode = "EMP0001",
+                            EmployeeCode = "ADM20260001",
                             FirstName = "System",
                             IsActive = true,
                             IsDeleted = false,
@@ -192,51 +119,25 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                             MustChangePassword = true,
                             PasswordHash = "$2a$12$j6rZXXE38.Thjp6aP1gqN.l5vhHT3Ym32VRq/ns4Edi3HQloOEAKO",
                             PhoneNumber = "9999999999",
-                            RoleId = 1,
+                            Role = "Admin",
                             TokenVersion = 0,
                             UpdatedAt = new DateTime(2026, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
                 });
 
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.PasswordResetToken", b =>
+            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Employee", b =>
                 {
-                    b.HasOne("EmployeeManagementSystem.DataAccess.Entities.User", "User")
-                        .WithMany("PasswordResetTokens")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.User", b =>
-                {
-                    b.HasOne("EmployeeManagementSystem.DataAccess.Entities.User", "Manager")
+                    b.HasOne("EmployeeManagementSystem.DataAccess.Entities.Employee", "Manager")
                         .WithMany("Employees")
                         .HasForeignKey("ManagerId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("EmployeeManagementSystem.DataAccess.Entities.Role", "Role")
-                        .WithMany("Users")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.Navigation("Manager");
-
-                    b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Role", b =>
-                {
-                    b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.User", b =>
+            modelBuilder.Entity("EmployeeManagementSystem.DataAccess.Entities.Employee", b =>
                 {
                     b.Navigation("Employees");
-
-                    b.Navigation("PasswordResetTokens");
                 });
 #pragma warning restore 612, 618
         }

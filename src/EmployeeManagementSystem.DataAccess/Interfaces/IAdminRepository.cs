@@ -16,7 +16,7 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
         Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode);
 
         //enable/disable feature in admin
-        Task UpdateEmployeeAsync(Employee employee);
+        Task SaveChangesAsync(Employee employee);
 
         Task<string?> GetLastEmployeeCodeAsync(string prefix, int year);
     }

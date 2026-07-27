@@ -108,7 +108,7 @@ namespace EmployeeManagementSystem.DataAccess.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2026, 7, 15, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Email = "admin@ems.com",
-                            EmployeeCode = "EMP0001",
+                            EmployeeCode = "ADM20260001",
                             FirstName = "System",
                             IsActive = true,
                             IsDeleted = false,

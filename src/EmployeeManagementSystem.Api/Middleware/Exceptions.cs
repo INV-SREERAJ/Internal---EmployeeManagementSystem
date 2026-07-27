@@ -6,9 +6,11 @@ namespace EmployeeManagementSystem.Api.Middleware
     public class Exceptions
     {
         private readonly RequestDelegate _next;
-        public Exceptions(RequestDelegate next)
+        private readonly ILogger<Exceptions> _logger;
+        public Exceptions(RequestDelegate next, ILogger<Exceptions> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -38,6 +40,11 @@ namespace EmployeeManagementSystem.Api.Middleware
             }
             catch (Exception ex)
             {
+                _logger.LogError( ex,
+                        "Unhandled exception while processing {Method} {Path}",
+                        context.Request.Method,
+                        context.Request.Path);
+
                 await HandleExceptionAsync(
                     context,
                     StatusCodes.Status500InternalServerError,

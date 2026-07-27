@@ -6,7 +6,6 @@ namespace EmployeeManagementSystem.Business.DTOs.Admin
 {
     public class EmployeeListDto
     {
-        public int Id { get; set; }
 
         public string EmployeeCode { get; set; } = string.Empty;
 
