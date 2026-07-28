@@ -16,6 +16,8 @@ namespace EmployeeManagementSystem.Business.Services
             _adminRepository = adminRepository;
         }
 
+
+        // employee code of the form EMP20260001
         public async Task<string> GenerateEmployeeCodeAsync(Role role)
         {
             string prefix = role switch

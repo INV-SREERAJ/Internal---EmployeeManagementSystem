@@ -112,3 +112,5 @@ Desktop.ini
 
 src/EmployeeManagementSystem.Api/appsettings.Development.json
 *.txt
+
+appsettings.json

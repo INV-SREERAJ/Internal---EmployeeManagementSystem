@@ -16,6 +16,9 @@ namespace EmployeeManagementSystem.Api.Controllers
             _authService = authService;
         }
 
+
+
+        //login
         [HttpPost("login")]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)

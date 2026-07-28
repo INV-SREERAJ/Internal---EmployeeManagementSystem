@@ -49,6 +49,7 @@ namespace EmployeeManagementSystem.Api.Middleware
 
             var path = context.Request.Path.Value?.ToLower();
 
+            //allowed paths for authenticated requests (special cases)
             var allowedEndpoints = new[]
             {
                 "/api/profile/change-password",

@@ -131,6 +131,16 @@ namespace EmployeeManagementSystem.Api.Controllers
         }
 
 
+
+        //reset password and send email
+        [HttpPost("employees/{employeeCode}")]
+        public async Task<IActionResult> ResetPassword(string employeeCode)
+        {
+            await _adminService.ResetUserPasswordAsync(employeeCode);
+            return Ok("The password for the user has been reset.");
+        }
+
+
         
 
 

@@ -22,13 +22,7 @@ namespace EmployeeManagementSystem.Business.Services
             _jwtSettings = jwtOptions.Value;
         }
 
-        
-
-        //public string GenerateRefreshToken(Employee employee)
-        //{
-        //    throw new NotImplementedException();
-        //}
-
+        // generate access and refresh token
         public TokenResponseDto GenerateTokenPair(Employee employee)
         {
             var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);
@@ -43,23 +37,8 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
-        //public TokenResponseDto GenerateTokens(Employee employee)
-        //{
-        //    var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);
-        //    var refreshTokenExpiry = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryDays);
-
-        //    var accessToken = GenerateAccessToken(employee, accessTokenExpiry);
-        //    var refreshToken = GenerateRefreshToken(employee, refreshTokenExpiry);
-
-        //    return new TokenResponseDto
-        //    {
-        //        AccessToken = accessToken,
-        //        RefreshToken = refreshToken,
-        //        AccessTokenExpiresAt = accessTokenExpiry,
-        //        RefreshTokenExpiresAt = refreshTokenExpiry
-        //    };
-        //}
-
+        
+        // getting prinicpal
         public ClaimsPrincipal? GetPrincipalFromToken(string token)
         {
             var tokenValidationParameters = new TokenValidationParameters
@@ -87,6 +66,7 @@ namespace EmployeeManagementSystem.Business.Services
                 out _);
         }
 
+        // checking if refresh token expires in less than 24 hours
         public bool ShouldRotateRefreshToken(string refreshToken)
         {
             var handler = new JwtSecurityTokenHandler();
@@ -98,6 +78,7 @@ namespace EmployeeManagementSystem.Business.Services
             return expiresAt <= DateTime.UtcNow.AddHours(24);
         }
 
+        // accesstoken logic
         public string GenerateAccessToken(Employee employee, DateTime expiresAt)
         {
             var claims = new List<Claim>
@@ -128,6 +109,8 @@ namespace EmployeeManagementSystem.Business.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+
+        //refresh token logic
         public string GenerateRefreshToken(Employee employee, DateTime expiresAt)
         {
             var claims = new List<Claim>
@@ -156,6 +139,7 @@ namespace EmployeeManagementSystem.Business.Services
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        // for access token only
         public TokenResponseDto GenerateAccessTokenOnly(Employee employee)
         {
             var accessTokenExpiry = DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpiryMinutes);

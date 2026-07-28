@@ -20,7 +20,6 @@ namespace EmployeeManagementSystem.Business.Services
         private readonly IEmployeeRepository _employeeRepository;
         private readonly IPasswordService _passwordService;
         private readonly IEmailService _emailService;
-        //private readonly IRoleRepository _roleRepository;
         private readonly IAdminRepository _adminRepository;
         private readonly IEmployeeCodeGenerator _employeeCodeGenerator;
         private readonly ILogger<AdminService> _logger;
@@ -30,7 +29,6 @@ namespace EmployeeManagementSystem.Business.Services
             _employeeRepository = employeeRepository;
             _passwordService = passwordService;
             _emailService = emailService;
-            //_roleRepository = roleRepository;
             _adminRepository = adminRepository;
             _employeeCodeGenerator = employeeCodeGenerator;
             _logger = logger;
@@ -133,7 +131,7 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
-        // get all employees including paging
+        // get all employees including paging, searching, sorting
         public async Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters)
         {
             var (employees, totalCount) =
@@ -420,6 +418,28 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
-        
+        //reset a users password
+        public async Task ResetUserPasswordAsync(string employeeCode)
+        {
+            _logger.LogInformation("Resetting the password of {employeeCode}", employeeCode);
+
+            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
+            if(employee == null)
+            {
+                _logger.LogInformation("Password reset failed. No employee found with : {employeeCode}", employeeCode);
+                throw new NotFoundException("User not found, check the employee code...");
+            }
+
+            var temp = _passwordService.GenerateTemporaryPassword();
+            var hashedPass = _passwordService.HashPassword(temp);
+
+            employee.PasswordHash = hashedPass;
+            employee.MustChangePassword = true;
+            employee.TokenVersion++;
+
+            await _employeeRepository.UpdateAsync(employee);
+            await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
+            _logger.LogInformation("Password resetted for user: {employeeCode}, successfully.", employeeCode);
+        }
     }
 }
