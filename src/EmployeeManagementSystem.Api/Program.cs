@@ -24,6 +24,7 @@ JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 app.UseMiddleware<Exceptions>();
 
 app.UseAuthentication();
+app.UseMiddleware<MustChangePasswordMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
