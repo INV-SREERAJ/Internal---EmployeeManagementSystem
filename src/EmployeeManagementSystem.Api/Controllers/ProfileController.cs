@@ -32,5 +32,15 @@ namespace EmployeeManagementSystem.Api.Controllers
             var result = await _profileService.UpdateProfileAsync(User, request);
             return Ok(result);
         }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto request)
+        {
+            await _profileService.ChangePasswordAsync(User, request);
+            return Ok(new
+            {
+                Message = "Password changed successfully."
+            });
+        }
     }
 }

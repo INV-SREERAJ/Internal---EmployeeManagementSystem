@@ -10,16 +10,72 @@ namespace EmployeeManagementSystem.Business.Services
 {
     public class ProfileService : IProfileService
     {
-        private readonly IProfileRepository _profileRepository;
+        //private readonly IProfileRepository _profileRepository;
         private readonly ILogger<ProfileService> _logger;
+        private readonly IPasswordService _passwordService;
+        private readonly IEmployeeRepository _employeeRepository;
 
-        public ProfileService(
-            IProfileRepository profileRepository,
-            ILogger<ProfileService> logger)
+        public ProfileService(ILogger<ProfileService> logger, IPasswordService passwordService, IEmployeeRepository employeeRepository)
         {
-            _profileRepository = profileRepository;
             _logger = logger;
+            _passwordService = passwordService;
+            _employeeRepository = employeeRepository;
         }
+        
+        
+        
+        //change password
+        public async Task ChangePasswordAsync(ClaimsPrincipal user, ChangePasswordRequestDto request)
+        {
+            _logger.LogInformation("Changing password...");
+            var employeeCode = user.FindFirst("EmployeeCode")?.Value;
+            _logger.LogInformation("user : {employeeCode}", employeeCode);
+
+            if (string.IsNullOrWhiteSpace(employeeCode))
+            {
+                _logger.LogWarning("Invalid employee code : {employeeCode}", employeeCode);
+                throw new UnAuthorizedException("Invalid user.");
+            }
+
+            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
+            if(employee == null)
+            {
+                _logger.LogWarning("No employee found for employee code : {employeeCode}", employeeCode);
+                throw new NotFoundException("user not found..");
+            }
+
+            var verification =  _passwordService.VerifyPassword(request.OldPassword, employee.PasswordHash);
+            if (!verification)
+            {
+                _logger.LogWarning("Password change for user : {employeeCode} because the entered old password is incorrect.", employeeCode);
+                throw new ConflictException("Invalid password.");
+            }
+
+            if(!(request.NewPassword .Equals(request.ConfirmPassword))) 
+            {
+                _logger.LogWarning("Change password failed due to mismatch in new password and confirm password");
+                throw new ConflictException("Passwords doesnt match!");
+            }
+
+            if(_passwordService.VerifyPassword(request.NewPassword, employee.PasswordHash))
+            {
+                _logger.LogWarning("Password change failed, the old password and new password was same. employeeCode : {employeeCode}", employeeCode);
+                throw new ConflictException("Old and new password cannot be the same..");
+            }
+            
+            var passwordHash = _passwordService.HashPassword(request.NewPassword);
+            employee.PasswordHash = passwordHash;
+            employee.TokenVersion++;
+            employee.MustChangePassword = false;
+            await _employeeRepository.UpdateAsync(employee);
+
+            _logger.LogInformation("Chnaged password for user: {employeeCode}, successfully.", employeeCode);
+
+            
+            
+            
+        }
+
 
         // Get profile details
         public async Task<ProfileResponseDto> GetProfileAsync(ClaimsPrincipal user)
@@ -31,7 +87,7 @@ namespace EmployeeManagementSystem.Business.Services
                 throw new UnAuthorizedException("Invalid user.");
             }
 
-            var employee = await _profileRepository.GetEmployeeAsync(employeeCode);
+            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
 
             if (employee == null)
             {
@@ -67,7 +123,7 @@ namespace EmployeeManagementSystem.Business.Services
                 "Updating profile for employee {EmployeeCode}",
                 employeeCode);
 
-            var employee = await _profileRepository.GetEmployeeAsync(employeeCode);
+            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
 
             if (employee == null)
             {
@@ -82,7 +138,7 @@ namespace EmployeeManagementSystem.Business.Services
             employee.LastName = request.LastName;
             employee.PhoneNumber = request.PhoneNumber;
 
-            await _profileRepository.SaveChangesAsync();
+            await _employeeRepository.UpdateAsync(employee);
 
             _logger.LogInformation(
                 "Profile updated successfully for employee {EmployeeCode}",

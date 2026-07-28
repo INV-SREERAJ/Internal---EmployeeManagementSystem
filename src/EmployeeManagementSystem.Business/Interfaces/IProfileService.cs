@@ -11,5 +11,6 @@ namespace EmployeeManagementSystem.Business.Interfaces
     {
         Task<ProfileResponseDto> GetProfileAsync(ClaimsPrincipal user);
         Task<ProfileResponseDto> UpdateProfileAsync(ClaimsPrincipal user, UpdateProfileRequestDto request);
+        Task ChangePasswordAsync(ClaimsPrincipal user,ChangePasswordRequestDto request);
     }
 }

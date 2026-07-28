@@ -39,7 +39,7 @@ namespace EmployeeManagementSystem.Business.Validators.Admin
                 .WithMessage("Please select a valid role.");
 
             RuleFor(x => x.ManagerEmployeeCode)
-                .Matches(@"^EMP\d{5}$")
+                .Matches(@"^(ADM|MNG|EMP)\d{8}$")
                 .When(x => !string.IsNullOrWhiteSpace(x.ManagerEmployeeCode))
                 .WithMessage("Manager employee code must be in the format EMP12345.");
         }
