@@ -43,6 +43,11 @@ namespace EmployeeManagementSystem.Business.Services
 
 
             var emailExists = await _employeeRepository.EmailExistsAsync(request.Email);
+            if(emailExists)
+            {
+                _logger.LogWarning("Employee creation failed, email already exists: {Email}", request.Email);
+                throw new ConflictException("Email already exists..");
+            }
             
             if(request.Role == Role.Admin)
             {

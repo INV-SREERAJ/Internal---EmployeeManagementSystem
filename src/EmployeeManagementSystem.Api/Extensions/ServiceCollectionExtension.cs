@@ -15,7 +15,6 @@ public static class ServiceCollectionExtensions
         // Repositories
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
         services.AddScoped<IAdminRepository, AdminRepository>();
-        services.AddScoped<IProfileRepository, ProfileRepository>();
         services.AddScoped<IManagerRepository, ManagerRepository>();
 
         // Services

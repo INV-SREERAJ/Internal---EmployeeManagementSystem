@@ -27,7 +27,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             var allChars = upper + lower + numbers + special;
             var random = new Random();
-
+                
             var password = new List<char>
             {
                 upper[random.Next(upper.Length)],
