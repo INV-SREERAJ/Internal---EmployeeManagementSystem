@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace EmployeeManagementSystem.Business.Validators
+namespace EmployeeManagementSystem.Business.Validators.Profile
 {
     public class ChangePasswordRequestValidator : AbstractValidator<ChangePasswordRequestDto>
     {

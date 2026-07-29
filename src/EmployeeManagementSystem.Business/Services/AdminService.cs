@@ -117,10 +117,19 @@ namespace EmployeeManagementSystem.Business.Services
             //successful creation
             _logger.LogInformation("Employee {EmployeeCode} created successfully.", employee.EmployeeCode);
 
-            await _emailService.WelcomeEmailAsync(
+            try
+            {
+                await _emailService.WelcomeEmailAsync(
                 employee.Email,
                 $"{employee.FirstName} {employee.LastName}",
                 temporaryPassword);
+            }
+            catch(Exception  ex)
+            {
+                _logger.LogError(ex, "Failed to send welcome email for employee {EmployeeCode}", employee.EmployeeCode);
+            }
+
+
             return new CreateEmployeeResponse
             {
                 EmployeeCode = employee.EmployeeCode,
@@ -438,7 +447,22 @@ namespace EmployeeManagementSystem.Business.Services
             employee.TokenVersion++;
 
             await _employeeRepository.UpdateAsync(employee);
-            await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
+
+            try
+            {
+                await _emailService.ResetPasswordEmailAsync(employee.Email,$"{employee.FirstName} {employee.LastName}",temp);
+
+                _logger.LogInformation("Password reset successfully for user: {EmployeeCode}.", employeeCode);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,
+                    "Password was reset for user {EmployeeCode}, but the reset email could not be sent.",
+                    employeeCode);
+
+                throw new InvalidOperationException(
+                    "The password was reset successfully, but the reset email could not be sent. Please retry the password reset.");
+            }
             _logger.LogInformation("Password resetted for user: {employeeCode}, successfully.", employeeCode);
         }
     }
