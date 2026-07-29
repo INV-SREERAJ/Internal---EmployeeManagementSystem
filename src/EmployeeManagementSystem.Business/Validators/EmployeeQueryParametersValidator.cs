@@ -20,7 +20,7 @@ namespace EmployeeManagementSystem.Business.Validators
             RuleFor(x => x.SortBy)
                 .Must(sort =>
                     string.IsNullOrWhiteSpace(sort) ||
-                    new[] { "name", "email", "role", "employeeCode" }
+                    new[] { "name", "email", "role", "employeeCode","createdAt" }
                         .Contains(sort, StringComparer.OrdinalIgnoreCase))
                 .WithMessage("Invalid sort field.");
 

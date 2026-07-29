@@ -62,6 +62,10 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                     ? query.OrderByDescending(u => u.Email)
                     : query.OrderBy(u => u.Email),
 
+                "role" => parameters.Descending
+                    ? query.OrderByDescending(e => e.Role)
+                    : query.OrderBy(e => e.Role),
+
                 "employeecode" => parameters.Descending
                     ? query.OrderByDescending(u => u.EmployeeCode)
                     : query.OrderBy(u => u.EmployeeCode),

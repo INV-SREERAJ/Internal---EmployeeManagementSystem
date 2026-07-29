@@ -28,5 +28,7 @@ public class EmployeeQueryParameters
 
     public string? SortBy { get; set; }
 
+    public DateTime? CreatedAt { get; set; }
+
     public bool Descending { get; set; }
 }
