@@ -7,5 +7,6 @@ namespace EmployeeManagementSystem.Business.Interfaces
     public interface IEmailService
     {
         Task WelcomeEmailAsync(string email, string FullName, string tempPassword);
+        Task ResetPasswordEmailAsync(string email, string fullName, string tempPassword);
     }
 }

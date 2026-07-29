@@ -25,7 +25,9 @@ namespace EmployeeManagementSystem.Business.Services
             _graceCache = cache;
             _logger = logger;
         }
+        
 
+        //login
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
             _logger.LogInformation("Login attempt for {Email}",request.Email);
@@ -107,8 +109,9 @@ namespace EmployeeManagementSystem.Business.Services
                 ExpiresAt = tokens.AccessTokenExpiresAt
             };
         }
-        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(
-    RefreshTokenRequestDto request)
+
+        //refresh access token
+        public async Task<RefreshTokenResponseDto> RefreshTokenAsync(RefreshTokenRequestDto request)
         {
             _logger.LogInformation("Refresh token request received.");
 

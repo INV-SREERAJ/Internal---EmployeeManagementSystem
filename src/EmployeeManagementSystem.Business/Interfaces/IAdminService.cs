@@ -22,6 +22,8 @@ namespace EmployeeManagementSystem.Business.Interfaces
 
         Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
 
+        Task ResetUserPasswordAsync(string employeeCode);
+
         Task<PagedResponse<EmployeeListDto>> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters);
     }
 }

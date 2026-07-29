@@ -26,6 +26,8 @@ namespace EmployeeManagementSystem.Business.Services
             _logger = logger;
         }
 
+
+        // get assigned employee from employee code
         public async Task<EmployeeDetailsResponseDto> GetAssignedEmployeeAsync(string managerCode, string employeeCode)
         {
             _logger.LogInformation("Getting an assigned employee {employeeCode} for manager {managerCode}", employeeCode, managerCode);
@@ -68,6 +70,7 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
+        // show all assigned employees with sorting searching paging
         public async Task<PagedResponse<EmployeeListDto>> GetAssignedEmployeesAsync(string managerCode, EmployeeQueryParameters employeeQueryParameters)
         {
             _logger.LogInformation(

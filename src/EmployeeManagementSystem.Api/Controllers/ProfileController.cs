@@ -33,6 +33,8 @@ namespace EmployeeManagementSystem.Api.Controllers
             return Ok(result);
         }
 
+
+        //change password by entering old password
         [HttpPost("change-password")]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequestDto request)
         {

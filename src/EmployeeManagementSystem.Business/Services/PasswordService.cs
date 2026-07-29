@@ -18,6 +18,8 @@ namespace EmployeeManagementSystem.Business.Services
             return BCrypt.Net.BCrypt.Verify(password, passwordHash);
         }
 
+
+        // temp password
         public string GenerateTemporaryPassword(int length = 10)
         {
             const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";

@@ -18,6 +18,9 @@ namespace EmployeeManagementSystem.Api.Controllers
             _managerService = managerService;
         }
 
+
+
+        //get all assigned employees(search sort available)
         [HttpGet("employees")]
         public async Task<IActionResult> GetAllEmployees([FromQuery] EmployeeQueryParameters parameters)
         {
@@ -26,6 +29,7 @@ namespace EmployeeManagementSystem.Api.Controllers
             return Ok(response);
         }
 
+        //get a specific employee(using employee code)
         [HttpGet("employees/{employeeCode}")]
         public async Task<IActionResult> GetAssignedEmployee(string employeeCode)
         {
