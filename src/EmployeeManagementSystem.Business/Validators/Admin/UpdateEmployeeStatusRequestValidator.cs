@@ -12,8 +12,8 @@ namespace EmployeeManagementSystem.Business.Validators.Admin
         public UpdateEmployeeStatusRequestValidator()
         {
             RuleFor(x => x.Status)
-                .IsInEnum()
-                .WithMessage("Invalid employee status.");
+                .Must(status => status == EmployeeStatus.Active || status == EmployeeStatus.Inactive)
+                .WithMessage("Status must be either Active or Inactive. Use the delete endpoint to delete an employee.");
         }
     }
 }

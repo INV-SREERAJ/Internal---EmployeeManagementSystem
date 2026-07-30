@@ -14,5 +14,7 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
         //enable/disable feature in admin
 
         Task<string?> GetLastEmployeeCodeAsync(string prefix, int year);
+
+        Task<bool> HasActiveDirectReportsAsync(int managerId);
     }
 }

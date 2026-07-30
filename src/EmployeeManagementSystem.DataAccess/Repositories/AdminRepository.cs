@@ -91,7 +91,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             return (employees, totalCount);
         }
 
-        
+
         public async Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode)
         {
             return await _context.Employees.FirstOrDefaultAsync(u =>
@@ -109,6 +109,13 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                 .OrderByDescending(e => e.EmployeeCode)
                 .Select(e => e.EmployeeCode)
                 .FirstOrDefaultAsync();
+        }
+
+        // a simple check to see if there is any employees report to a manager
+        public async Task<bool> HasActiveDirectReportsAsync(int managerId)
+        {
+            return await _context.Employees.AnyAsync(e =>
+                e.ManagerId == managerId && e.Status != EmployeeStatus.Deleted);
         }
     }
 }

@@ -13,6 +13,7 @@ namespace EmployeeManagementSystem.Api.Controllers
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
+        private readonly ILogger<AdminController> _logger;
 
         public AdminController(IAdminService adminService)
         {
@@ -23,18 +24,21 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPost("employees")]
         public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest request)
         {
+            _logger.LogInformation("Inside CreateEmployee for creation request.");
             var response = await _adminService.CreateEmployeeAsync(request);
 
             return CreatedAtAction(
                 nameof(CreateEmployee),
                 new { employeeCode = response.EmployeeCode },
                 response);
+            
         }
 
         //get all  available employees
         [HttpGet("employees")]
         public async Task<IActionResult> GetEmployees([FromQuery] EmployeeQueryParameters parameters)
         {
+            _logger.LogInformation("Inside GetEmployees.");
             var result = await _adminService.GetEmployeesAsync(parameters);
 
             return Ok(result);
@@ -52,10 +56,11 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpGet("employees/{EmployeeCode}")]
         public async Task<IActionResult> GetEmployee([FromRoute] string EmployeeCode)
         {
+            _logger.LogInformation("Inside GetEmployee for {employeeCOde}.",EmployeeCode);
             var employee = await _adminService.GetEmployeeDetailsAsync(EmployeeCode);
             return Ok(employee);
         }
-        
+
 
 
 
@@ -63,6 +68,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPut("employees/{EmployeeCode}")]
         public async Task<IActionResult> EditEmployeeAsync([FromRoute] string EmployeeCode, [FromBody] UpdateEmployeeRequest request)
         {
+            _logger.LogInformation("Inside EditEmployee for editing {employeeCode}.",EmployeeCode);
             var employeeDetails = await _adminService.UpdateEmployeeAsync(EmployeeCode, request);
             return Ok(employeeDetails);
         }
@@ -71,6 +77,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPatch("employees/{EmployeeCode}/status")]
         public async Task<IActionResult> ChangeEmployeeStatus([FromBody] UpdateEmployeeStatusRequest statusRequest, [FromRoute] string EmployeeCode)
         {
+            _logger.LogInformation("Inside ChangeEmployeeStatus for {employeeCode}.", EmployeeCode);
             var currentEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
             if (string.IsNullOrWhiteSpace(currentEmployeeCode))
                 return Unauthorized();
@@ -93,7 +100,6 @@ namespace EmployeeManagementSystem.Api.Controllers
                     {
                         EmployeeStatus.Active => "Employee activated successfully.",
                         EmployeeStatus.Inactive => "Employee deactivated successfully.",
-                        EmployeeStatus.Deleted => "Employee deleted successfully.",
                         _ => "Employee status updated successfully."
                     }
                 }
@@ -106,6 +112,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPatch("employees/{EmployeeCode}/manager")]
         public async Task<IActionResult> ChangeReportingManager([FromRoute] string EmployeeCode, [FromBody] string managerEmployeeCode)
         {
+            _logger.LogInformation("Inside ChangeReportingManager for {employeeCode}.",EmployeeCode);
             await _adminService.ChangeReportingManagerAsync(EmployeeCode, managerEmployeeCode);
             return Ok(
                 new
@@ -117,23 +124,25 @@ namespace EmployeeManagementSystem.Api.Controllers
 
 
 
-        ////soft delete an employee
-        //[HttpDelete("employees/{EmployeeCode}")]
-        //public async Task<IActionResult> DeleteEmployee([FromRoute]string EmployeeCode)
-        //{
-        //    var currEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
-        //    if (string.IsNullOrWhiteSpace(currEmployeeCode))
-        //        return Unauthorized();
+        //soft delete an employee
+        [HttpDelete("employees/{EmployeeCode}")]
+        public async Task<IActionResult> DeleteEmployee([FromRoute] string EmployeeCode)
+        {
+            _logger.LogInformation("Inside DeleteEmployee for {employeeCode}", EmployeeCode);
+            var currEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
+            if (string.IsNullOrWhiteSpace(currEmployeeCode))
+                return Unauthorized();
 
 
-        //    await _adminService.DeleteEmployeeAsync(EmployeeCode, currEmployeeCode);
-        //        return Ok(
-        //            new
-        //            {
-        //                Message = "User Deleted Successfully!"
-        //            }
-        //            );
-        //}
+
+            await _adminService.DeleteEmployeeAsync(EmployeeCode, currEmployeeCode);
+            return Ok(
+                new
+                {
+                    Message = "User Deleted Successfully!"
+                }
+                );
+        }
 
 
 
@@ -141,14 +150,9 @@ namespace EmployeeManagementSystem.Api.Controllers
         [HttpPost("employees/{employeeCode}")]
         public async Task<IActionResult> ResetPassword(string employeeCode)
         {
+            _logger.LogInformation("Inside ResetPassword for {employeeCode}.",employeeCode);
             await _adminService.ResetUserPasswordAsync(employeeCode);
             return Ok("The password for the user has been reset.");
         }
-
-
-        
-
-
-        
     }
 }

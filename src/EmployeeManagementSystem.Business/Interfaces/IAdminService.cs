@@ -19,6 +19,8 @@ namespace EmployeeManagementSystem.Business.Interfaces
 
         Task<EmployeeDetailsResponseDto> UpdateEmployeeAsync(string employeeCode, UpdateEmployeeRequest request);
 
+        Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode);
+
         Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
 
         Task ResetUserPasswordAsync(string employeeCode);
