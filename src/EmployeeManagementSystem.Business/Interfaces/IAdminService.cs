@@ -1,6 +1,7 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
 using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Entities;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,7 +13,7 @@ namespace EmployeeManagementSystem.Business.Interfaces
         Task<CreateEmployeeResponse> CreateEmployeeAsync(CreateEmployeeRequest request);
 
         Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters);
-        Task<bool> UpdateEmployeeStatusAsync(string employeeCode, bool isActive, string currentEmployeeCode);
+        Task<bool> UpdateEmployeeStatusAsync(string employeeCode, EmployeeStatus status, string currentEmployeeCode);
 
         Task<EmployeeDetailsResponseDto> GetEmployeeDetailsAsync(string employeeCode);
 
@@ -23,7 +24,5 @@ namespace EmployeeManagementSystem.Business.Interfaces
         Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
 
         Task ResetUserPasswordAsync(string employeeCode);
-
-        Task<PagedResponse<EmployeeListDto>> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters);
     }
 }

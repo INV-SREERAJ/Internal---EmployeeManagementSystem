@@ -19,7 +19,7 @@ namespace EmployeeManagementSystem.Business.DTOs.Admin
 
         public string Role { get; set; } = string.Empty;
 
-        public bool IsActive { get; set; }
+        public EmployeeStatus Status { get; set; }
 
         public DateTime CreatedAt { get; set; }
 

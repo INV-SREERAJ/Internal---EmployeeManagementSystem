@@ -39,21 +39,19 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
                    .HasMaxLength(20);
 
             builder.Property(u => u.PasswordHash)
-                   .IsRequired();
+                   .IsRequired()
+                   .HasMaxLength(255);
 
             builder.Property(u => u.TokenVersion)
                    .HasDefaultValue(0);
 
-            builder.Property(u => u.IsActive)
-                   .HasDefaultValue(true);
-
-            builder.Property(u => u.IsDeleted)
-                   .HasDefaultValue(false);
+            builder.Property(u => u.Status)
+                .HasDefaultValue(EmployeeStatus.Active);
 
             builder.Property(u => u.MustChangePassword)
                    .HasDefaultValue(true);
 
-            builder.Property(e => e.Role).HasConversion<string>()
+            builder.Property(e => e.Role)
                 .HasMaxLength(20);
 
             builder.HasOne(u => u.Manager)
@@ -61,25 +59,7 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
                    .HasForeignKey(u => u.ManagerId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasData(
-            new Employee
-            {
-                Id = 1,
-                EmployeeCode = "ADM20260001",
-                FirstName = "System",
-                LastName = "Admin",
-                Email = "admin@ems.com",
-                PhoneNumber = "9999999999",
-                PasswordHash = "$2a$12$j6rZXXE38.Thjp6aP1gqN.l5vhHT3Ym32VRq/ns4Edi3HQloOEAKO",
-                Role = Role.Admin,              // Admin
-                ManagerId = null,
-                TokenVersion = 0,
-                MustChangePassword = true,
-                IsActive = true,
-                IsDeleted = false,
-                CreatedAt = new DateTime(2026, 7, 15),
-                UpdatedAt = new DateTime(2026, 7, 15)
-            });
+            
             }
     }
 }

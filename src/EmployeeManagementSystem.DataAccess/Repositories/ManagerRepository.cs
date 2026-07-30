@@ -4,9 +4,6 @@ using EmployeeManagementSystem.DataAccess.Entities;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.DataAccess.Repositories
 {
@@ -26,13 +23,13 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                 .FirstOrDefaultAsync(e =>
                     e.ManagerId == managerId &&
                     e.EmployeeCode == employeeCode &&
-                    !e.IsDeleted);
+                    e.Status != EmployeeStatus.Deleted);
         }
 
         public async Task<(IEnumerable<Employee> employees, int TotalCount)> GetAssignedEmployeesAsync(int managerId, EmployeeQueryParameters parameters)
         {
             var query = _context.Employees
-                .Where(e => e.ManagerId == managerId && !e.IsDeleted)
+                .Where(e => e.ManagerId == managerId && e.Status != EmployeeStatus.Deleted)
                 .Include(e => e.Manager)
                 .AsQueryable();
 
@@ -56,9 +53,9 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             }
 
             // Filter by Status
-            if (parameters.IsActive.HasValue)
+            if (parameters.Status.HasValue)
             {
-                query = query.Where(e => e.IsActive == parameters.IsActive.Value);
+                query = query.Where(e => e.Status == parameters.Status.Value);
             }
 
             // Sorting
@@ -98,6 +95,6 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         }
 
 
-        
+
     }
 }

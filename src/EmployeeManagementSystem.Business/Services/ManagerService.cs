@@ -64,7 +64,7 @@ namespace EmployeeManagementSystem.Business.Services
                 Email = response.Email,
                 PhoneNumber = response.PhoneNumber,
                 Role = response.Role.ToString(),
-                IsActive = response.IsActive,
+                Status = response.Status,
                 CreatedAt = response.CreatedAt,
                 UpdatedAt = response.UpdatedAt
             };
@@ -104,7 +104,7 @@ namespace EmployeeManagementSystem.Business.Services
                 ManagerName = employee.Manager == null
                     ? null
                     : $"{employee.Manager.FirstName} {employee.Manager.LastName}",
-                IsActive = employee.IsActive
+                Status = employee.Status
             });
 
             _logger.LogInformation(

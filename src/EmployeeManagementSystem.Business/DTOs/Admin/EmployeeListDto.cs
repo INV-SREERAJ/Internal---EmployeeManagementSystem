@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EmployeeManagementSystem.DataAccess.Entities.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -19,6 +20,6 @@ namespace EmployeeManagementSystem.Business.DTOs.Admin
 
         public string? ManagerName { get; set; }
 
-        public bool IsActive { get; set; }
+        public EmployeeStatus Status { get; set; }
     }
 }

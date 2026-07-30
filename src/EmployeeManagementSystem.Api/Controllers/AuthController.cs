@@ -10,10 +10,11 @@ namespace EmployeeManagementSystem.Api.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
-
-        public AuthController(IAuthService authService)
+        private readonly ILogger<AuthController> _logger;
+        public AuthController(IAuthService authService, ILogger<AuthController> logger)
         {
             _authService = authService;
+            _logger = logger;
         }
 
 
@@ -23,6 +24,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
         {
+            _logger.LogInformation("Inside Login endpoint.");
             var loginResponse = await _authService.LoginAsync(loginRequest);
 
             if (!loginResponse.Success)
@@ -36,6 +38,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)
         {
+            _logger.LogInformation("Inside Refresh endpoint.");
             var response = await _authService.RefreshTokenAsync(request);
 
             if (!response.Success)

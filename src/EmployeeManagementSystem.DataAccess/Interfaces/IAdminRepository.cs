@@ -1,9 +1,6 @@
 ﻿
 using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Entities;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.DataAccess.Interfaces
 {
@@ -11,13 +8,13 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
     {
         Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters);
 
-        Task<(IEnumerable<Employee> employees, int TotalCount)> GetDeletedEmployeesAsync(EmployeeQueryParameters parameters);
 
         Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode);
 
         //enable/disable feature in admin
-        Task SaveChangesAsync(Employee employee);
 
         Task<string?> GetLastEmployeeCodeAsync(string prefix, int year);
+
+        Task<bool> HasActiveDirectReportsAsync(int managerId);
     }
 }

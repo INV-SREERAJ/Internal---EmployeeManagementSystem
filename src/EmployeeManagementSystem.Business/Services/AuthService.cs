@@ -3,6 +3,7 @@ using EmployeeManagementSystem.Business.Configuration;
 using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.DTOs.EmployeeManagementSystem.Business.DTOs.Authentication;
 using EmployeeManagementSystem.Business.Interfaces;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
@@ -65,7 +66,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
 
             // Check if account is deleted
-            if (employee.IsDeleted)
+            if (employee.Status == EmployeeStatus.Deleted)
             {
                 _logger.LogWarning("Deleted employee attempted login. EmployeeCode: {EmployeeCode}",employee.EmployeeCode);
                 return new LoginResponseDto
@@ -77,7 +78,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
 
             // Check if account is inactive
-            if (!employee.IsActive)
+            if (employee.Status == EmployeeStatus.Inactive)
             {
                 _logger.LogWarning("Inactive employee attempted login. EmployeeCode: {EmployeeCode}",employee.EmployeeCode);
                 return new LoginResponseDto
@@ -190,13 +191,13 @@ namespace EmployeeManagementSystem.Business.Services
                 };
             }
 
-            if (!employee.IsActive || employee.IsDeleted)
+            if (employee.Status != EmployeeStatus.Active)
             {
                 _logger.LogWarning("Refresh denied for inactive employee {EmployeeCode}.",employee.EmployeeCode);
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
-                    Message = "User account is inactive."
+                    Message = "User account is not active."
                 };
             }
 
