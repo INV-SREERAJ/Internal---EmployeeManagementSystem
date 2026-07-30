@@ -1,6 +1,7 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.common;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -39,13 +40,13 @@ namespace EmployeeManagementSystem.Api.Controllers
             return Ok(result);
         }
 
-        //get deleted employees
-        [HttpGet("employees/deleted")]
-        public async Task<IActionResult> GetDeletedEmployees([FromQuery] EmployeeQueryParameters parameters)
-        {
-            var result = await _adminService.GetDeletedEmployeesAsync(parameters);
-            return Ok(result);
-        }
+        ////get deleted employees
+        //[HttpGet("employees/deleted")]
+        //public async Task<IActionResult> GetDeletedEmployees([FromQuery] EmployeeQueryParameters parameters)
+        //{
+        //    var result = await _adminService.GetDeletedEmployeesAsync(parameters);
+        //    return Ok(result);
+        //}
 
         //get employee by EmployeeCode
         [HttpGet("employees/{EmployeeCode}")]
@@ -74,7 +75,7 @@ namespace EmployeeManagementSystem.Api.Controllers
             if (string.IsNullOrWhiteSpace(currentEmployeeCode))
                 return Unauthorized();
 
-            var statusChanged = await _adminService.UpdateEmployeeStatusAsync(EmployeeCode, statusRequest.IsActive, currentEmployeeCode);
+            var statusChanged = await _adminService.UpdateEmployeeStatusAsync(EmployeeCode, statusRequest.Status, currentEmployeeCode);
 
             if (!statusChanged)
             {
@@ -88,9 +89,13 @@ namespace EmployeeManagementSystem.Api.Controllers
             return Ok(
                 new
                 {
-                    Message = statusRequest.IsActive
-                    ? "Employee enabled successfully."
-                    : "Employee disabled successfully."
+                    Message = statusRequest.Status switch
+                    {
+                        EmployeeStatus.Active => "Employee activated successfully.",
+                        EmployeeStatus.Inactive => "Employee deactivated successfully.",
+                        EmployeeStatus.Deleted => "Employee deleted successfully.",
+                        _ => "Employee status updated successfully."
+                    }
                 }
              );
         }
@@ -112,23 +117,23 @@ namespace EmployeeManagementSystem.Api.Controllers
 
 
 
-        //soft delete an employee
-        [HttpDelete("employees/{EmployeeCode}")]
-        public async Task<IActionResult> DeleteEmployee([FromRoute]string EmployeeCode)
-        {
-            var currEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
-            if (string.IsNullOrWhiteSpace(currEmployeeCode))
-                return Unauthorized();
+        ////soft delete an employee
+        //[HttpDelete("employees/{EmployeeCode}")]
+        //public async Task<IActionResult> DeleteEmployee([FromRoute]string EmployeeCode)
+        //{
+        //    var currEmployeeCode = User.FindFirst("EmployeeCode")?.Value;
+        //    if (string.IsNullOrWhiteSpace(currEmployeeCode))
+        //        return Unauthorized();
 
 
-            await _adminService.DeleteEmployeeAsync(EmployeeCode, currEmployeeCode);
-                return Ok(
-                    new
-                    {
-                        Message = "User Deleted Successfully!"
-                    }
-                    );
-        }
+        //    await _adminService.DeleteEmployeeAsync(EmployeeCode, currEmployeeCode);
+        //        return Ok(
+        //            new
+        //            {
+        //                Message = "User Deleted Successfully!"
+        //            }
+        //            );
+        //}
 
 
 

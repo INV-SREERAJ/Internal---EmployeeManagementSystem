@@ -1,6 +1,5 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Profile;
 using EmployeeManagementSystem.Business.Interfaces;
-using EmployeeManagementSystem.Business.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

@@ -20,13 +20,7 @@ namespace EmployeeManagementSystem.Business.Services
         // employee code of the form EMP20260001
         public async Task<string> GenerateEmployeeCodeAsync(Role role)
         {
-            string prefix = role switch
-            {
-                Role.Admin => "ADM",
-                Role.Manager => "MNG",
-                Role.Employee => "EMP",
-                _ => throw new ArgumentException("Invalid role")
-            };
+            string prefix = "EMP";
 
             int year = DateTime.UtcNow.Year;
 

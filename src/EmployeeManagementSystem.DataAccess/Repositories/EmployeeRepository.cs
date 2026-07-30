@@ -1,5 +1,6 @@
 ﻿using EmployeeManagementSystem.DataAccess.Context;
 using EmployeeManagementSystem.DataAccess.Entities;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,7 +26,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         public async Task<bool> EmailExistsAsync(string email)
         {
             return await _context.Employees
-                .AnyAsync(e => e.Email == email && !e.IsDeleted);
+                .AnyAsync(e => e.Email == email && e.Status != EmployeeStatus.Deleted);
         }
 
         public async Task<Employee?> GetByEmailAsync(string email)
@@ -40,7 +41,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                 .Include(e => e.Manager)
                 .FirstOrDefaultAsync(e =>
                     e.EmployeeCode == employeeCode &&
-                    !e.IsDeleted);
+                    e.Status != EmployeeStatus.Deleted);
         }
 
         public async Task<Employee?> GetByIdAsync(int id)

@@ -23,10 +23,8 @@ namespace EmployeeManagementSystem.DataAccess.Entities
 
         //used to make the user reset the password in the initial login
         public bool MustChangePassword { get; set; }
-        public bool IsActive { get; set; }
-
-        //soft delete
-        public bool IsDeleted { get; set; }
+        
+        public EmployeeStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

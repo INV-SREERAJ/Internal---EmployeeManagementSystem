@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EmployeeManagementSystem.DataAccess.Entities.Enums;
 
 namespace EmployeeManagementSystem.DataAccess.common;
 
@@ -24,11 +22,12 @@ public class EmployeeQueryParameters
 
     public string? Role { get; set; }
 
-    public bool? IsActive { get; set; }
+    public EmployeeStatus? Status { get; set; }
 
     public string? SortBy { get; set; }
 
     public DateTime? CreatedAt { get; set; }
 
     public bool Descending { get; set; }
+    public bool IncludeDeleted { get; set; } = false;
 }
