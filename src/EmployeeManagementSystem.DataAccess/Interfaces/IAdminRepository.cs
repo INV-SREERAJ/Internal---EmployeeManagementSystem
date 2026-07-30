@@ -15,6 +15,6 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
 
         Task<string?> GetLastEmployeeCodeAsync(string prefix, int year);
 
-        Task<bool> HasActiveDirectReportsAsync(int managerId);
+
     }
 }
