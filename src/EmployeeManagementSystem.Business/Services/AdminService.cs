@@ -19,8 +19,9 @@ namespace EmployeeManagementSystem.Business.Services
         private readonly IAdminRepository _adminRepository;
         private readonly IEmployeeCodeGenerator _employeeCodeGenerator;
         private readonly ILogger<AdminService> _logger;
+        private readonly IManagerRepository _managerRepository;
 
-        public AdminService(IEmployeeRepository employeeRepository, IPasswordService passwordService, IEmailService emailService, IAdminRepository adminRepository, IEmployeeCodeGenerator employeeCodeGenerator, ILogger<AdminService> logger)
+        public AdminService(IEmployeeRepository employeeRepository, IPasswordService passwordService, IEmailService emailService, IAdminRepository adminRepository, IEmployeeCodeGenerator employeeCodeGenerator, ILogger<AdminService> logger, IManagerRepository managerRepository)
         {
             _employeeRepository = employeeRepository;
             _passwordService = passwordService;
@@ -28,6 +29,7 @@ namespace EmployeeManagementSystem.Business.Services
             _adminRepository = adminRepository;
             _employeeCodeGenerator = employeeCodeGenerator;
             _logger = logger;
+            _managerRepository = managerRepository;
         }
 
         //create employee
@@ -186,7 +188,7 @@ namespace EmployeeManagementSystem.Business.Services
                 throw new ConflictException("You cannot disable your own account.");
             }
 
-            if (status != EmployeeStatus.Active && await _adminRepository.HasActiveDirectReportsAsync(employee.Id))
+            if (status != EmployeeStatus.Active && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
             {
                 _logger.LogInformation("Tried to disable manager {employeeCode} but has active reporting employees thereby failed the action.", employeeCode);
                 throw new ConflictException("Cant disable a manager with active employees reporting. Please change the reporing manager of the employees and try again."); ;
@@ -255,7 +257,7 @@ namespace EmployeeManagementSystem.Business.Services
                 throw new ConflictException("The only admin cannot be changed to another role.");
             }
 
-            if (employee.Role != Role.Employee && request.Role == Role.Employee && await _adminRepository.HasActiveDirectReportsAsync(employee.Id))
+            if (employee.Role != Role.Employee && request.Role == Role.Employee && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
             {
                 _logger.LogWarning("Update employee failed for {employeeCode} since manager has active employees reporting", employeeCode);
                 throw new ConflictException("Cant change the role of this employee as there are employees reporting to him");
@@ -326,6 +328,12 @@ namespace EmployeeManagementSystem.Business.Services
             {
                 _logger.LogWarning("Delete failed. Employee {EmployeeCode} is already deleted.", employeeCode);
                 throw new ConflictException("Employee is already deleted.");
+            }
+
+            if(employee.Role == Role.Manager && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
+            {
+                _logger.LogWarning("Manager deletion failed {employeeCode}", employeeCode);
+                throw new ConflictException("Manager cant be deleted, please change the employees reporting and try again.");
             }
 
             employee.Status = EmployeeStatus.Deleted;

@@ -1,8 +1,17 @@
 using EmployeeManagementSystem.Api.Extensions;
 using EmployeeManagementSystem.Api.Middleware;
+using Serilog;
 using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services);
+});
+
 
 builder.Services.AddControllers();
 
@@ -22,7 +31,7 @@ app.UseHttpsRedirection();
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
 app.UseMiddleware<Exceptions>();
-
+app.UseSerilogRequestLogging(); // logs one line per HTTP request: method, path, status, duration
 app.UseAuthentication();
 app.UseMiddleware<MustChangePasswordMiddleware>();
 app.UseAuthorization();

@@ -111,11 +111,6 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        // a simple check to see if there is any employees report to a manager
-        public async Task<bool> HasActiveDirectReportsAsync(int managerId)
-        {
-            return await _context.Employees.AnyAsync(e =>
-                e.ManagerId == managerId && e.Status != EmployeeStatus.Deleted);
-        }
+        
     }
 }
