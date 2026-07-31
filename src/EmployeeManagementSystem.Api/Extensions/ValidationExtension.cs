@@ -2,7 +2,6 @@
 using EmployeeManagementSystem.Business.Validators.Auth;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace EmployeeManagementSystem.Api.Extensions;
 

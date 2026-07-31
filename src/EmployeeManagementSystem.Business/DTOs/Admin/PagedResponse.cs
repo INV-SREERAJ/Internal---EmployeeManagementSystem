@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Xml.Linq;
-
-    namespace EmployeeManagementSystem.Business.DTOs.Admin
+﻿namespace EmployeeManagementSystem.Business.DTOs.Admin
 {
     public class PagedResponse<T>
     {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EmployeeManagementSystem.DataAccess.Entities.Enums
+﻿namespace EmployeeManagementSystem.DataAccess.Entities.Enums
 {
     public enum Role
     {

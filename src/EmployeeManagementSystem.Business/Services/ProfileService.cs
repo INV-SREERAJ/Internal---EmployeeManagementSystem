@@ -1,6 +1,6 @@
-﻿using EmployeeManagementSystem.Business.DTOs.Profile;
+using EmployeeManagementSystem.Business.Common;
+using EmployeeManagementSystem.Business.DTOs.Profile;
 using EmployeeManagementSystem.Business.DTOs.ProfileResponseDto;
-using EmployeeManagementSystem.Business.GlobalExceptionHandler;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,6 @@ namespace EmployeeManagementSystem.Business.Services
 {
     public class ProfileService : IProfileService
     {
-        //private readonly IProfileRepository _profileRepository;
         private readonly ILogger<ProfileService> _logger;
         private readonly IPasswordService _passwordService;
         private readonly IEmployeeRepository _employeeRepository;
@@ -21,11 +20,9 @@ namespace EmployeeManagementSystem.Business.Services
             _passwordService = passwordService;
             _employeeRepository = employeeRepository;
         }
-        
-        
-        
+
         //change password
-        public async Task ChangePasswordAsync(ClaimsPrincipal user, ChangePasswordRequestDto request)
+        public async Task<Result> ChangePasswordAsync(ClaimsPrincipal user, ChangePasswordRequestDto request)
         {
             _logger.LogInformation("Changing password...");
             var employeeCode = user.FindFirst("EmployeeCode")?.Value;
@@ -34,67 +31,63 @@ namespace EmployeeManagementSystem.Business.Services
             if (string.IsNullOrWhiteSpace(employeeCode))
             {
                 _logger.LogWarning("Invalid employee code : {employeeCode}", employeeCode);
-                throw new UnAuthorizedException("Invalid user.");
+                return Result.Fail(ErrorType.Unauthorized, "Invalid user.");
             }
 
             var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
-            if(employee == null)
+            if (employee == null)
             {
                 _logger.LogWarning("No employee found for employee code : {employeeCode}", employeeCode);
-                throw new NotFoundException("user not found..");
+                return Result.Fail(ErrorType.NotFound, "User not found.");
             }
 
-            var verification =  _passwordService.VerifyPassword(request.OldPassword, employee.PasswordHash);
+            var verification = _passwordService.VerifyPassword(request.OldPassword, employee.PasswordHash);
             if (!verification)
             {
                 _logger.LogWarning("Password change for user : {employeeCode} because the entered old password is incorrect.", employeeCode);
-                throw new ConflictException("Invalid password.");
+                return Result.Fail(ErrorType.Conflict, "Invalid password.");
             }
 
-            if(!(request.NewPassword .Equals(request.ConfirmPassword))) 
+            if (!(request.NewPassword.Equals(request.ConfirmPassword)))
             {
                 _logger.LogWarning("Change password failed due to mismatch in new password and confirm password");
-                throw new ConflictException("Passwords doesnt match!");
+                return Result.Fail(ErrorType.Conflict, "Passwords don't match!");
             }
 
-            if(_passwordService.VerifyPassword(request.NewPassword, employee.PasswordHash))
+            if (_passwordService.VerifyPassword(request.NewPassword, employee.PasswordHash))
             {
                 _logger.LogWarning("Password change failed, the old password and new password was same. employeeCode : {employeeCode}", employeeCode);
-                throw new ConflictException("Old and new password cannot be the same..");
+                return Result.Fail(ErrorType.Conflict, "Old and new password cannot be the same.");
             }
-            
+
             var passwordHash = _passwordService.HashPassword(request.NewPassword);
             employee.PasswordHash = passwordHash;
             employee.TokenVersion++;
             employee.MustChangePassword = false;
             await _employeeRepository.UpdateAsync(employee);
 
-            _logger.LogInformation("Chnaged password for user: {employeeCode}, successfully.", employeeCode);
-
-            
-            
-            
+            _logger.LogInformation("Changed password for user: {employeeCode}, successfully.", employeeCode);
+            return Result.Ok();
         }
 
-
         // Get profile details
-        public async Task<ProfileResponseDto> GetProfileAsync(ClaimsPrincipal user)
+        public async Task<Result<ProfileResponseDto>> GetProfileAsync(ClaimsPrincipal user)
         {
             var employeeCode = user.FindFirst("EmployeeCode")?.Value;
 
             if (string.IsNullOrWhiteSpace(employeeCode))
             {
-                throw new UnAuthorizedException("Invalid user.");
+                return Result<ProfileResponseDto>.Fail(ErrorType.Unauthorized, "Invalid user.");
             }
 
             var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
 
             if (employee == null)
             {
-                throw new NotFoundException("Employee not found.");
+                return Result<ProfileResponseDto>.Fail(ErrorType.NotFound, "Employee not found.");
             }
 
-            return new ProfileResponseDto
+            return Result<ProfileResponseDto>.Ok(new ProfileResponseDto
             {
                 EmployeeCode = employee.EmployeeCode,
                 FirstName = employee.FirstName,
@@ -104,11 +97,11 @@ namespace EmployeeManagementSystem.Business.Services
                 Role = employee.Role,
                 ManagerCode = employee.Manager?.EmployeeCode,
                 CreatedAt = employee.CreatedAt
-            };
+            });
         }
 
         // Update profile
-        public async Task<ProfileResponseDto> UpdateProfileAsync(
+        public async Task<Result<ProfileResponseDto>> UpdateProfileAsync(
             ClaimsPrincipal user,
             UpdateProfileRequestDto request)
         {
@@ -116,7 +109,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (string.IsNullOrWhiteSpace(employeeCode))
             {
-                throw new UnAuthorizedException("Invalid user.");
+                return Result<ProfileResponseDto>.Fail(ErrorType.Unauthorized, "Invalid user.");
             }
 
             _logger.LogInformation(
@@ -131,7 +124,7 @@ namespace EmployeeManagementSystem.Business.Services
                     "Profile update failed. Employee {EmployeeCode} not found.",
                     employeeCode);
 
-                throw new NotFoundException("Employee not found.");
+                return Result<ProfileResponseDto>.Fail(ErrorType.NotFound, "Employee not found.");
             }
 
             employee.FirstName = request.FirstName;
@@ -144,7 +137,7 @@ namespace EmployeeManagementSystem.Business.Services
                 "Profile updated successfully for employee {EmployeeCode}",
                 employee.EmployeeCode);
 
-            return new ProfileResponseDto
+            return Result<ProfileResponseDto>.Ok(new ProfileResponseDto
             {
                 EmployeeCode = employee.EmployeeCode,
                 FirstName = employee.FirstName,
@@ -154,7 +147,7 @@ namespace EmployeeManagementSystem.Business.Services
                 Role = employee.Role,
                 ManagerCode = employee.Manager?.EmployeeCode,
                 CreatedAt = employee.CreatedAt
-            };
+            });
         }
     }
 }

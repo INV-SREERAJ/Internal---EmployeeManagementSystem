@@ -20,7 +20,7 @@ public static class AuthenticationExtensions
 
         services.AddMemoryCache();
 
-        services.AddSingleton<IRefreshTokenGraceCache,RefreshTokenGraceCache>();
+        services.AddSingleton<IRefreshTokenGraceCache, RefreshTokenGraceCache>();
 
         var jwtSettings = configuration
             .GetSection("JwtSettings")

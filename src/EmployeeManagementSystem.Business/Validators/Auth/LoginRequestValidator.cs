@@ -1,9 +1,5 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Auth;
 using FluentValidation;
-using Microsoft.AspNetCore.Identity.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.Business.Validators.Admin
 {

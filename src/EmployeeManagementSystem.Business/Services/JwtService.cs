@@ -1,12 +1,9 @@
 ﻿using EmployeeManagementSystem.Business.Configuration;
-using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.DTOs.EmployeeManagementSystem.Business.DTOs.Authentication;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -37,7 +34,7 @@ namespace EmployeeManagementSystem.Business.Services
             };
         }
 
-        
+
         // getting prinicpal
         public ClaimsPrincipal? GetPrincipalFromToken(string token)
         {

@@ -1,15 +1,9 @@
-﻿using EmployeeManagementSystem.Business.DTOs.Admin;
-using EmployeeManagementSystem.Business.GlobalExceptionHandler;
+using EmployeeManagementSystem.Business.Common;
+using EmployeeManagementSystem.Business.DTOs.Admin;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.common;
-using EmployeeManagementSystem.DataAccess.Entities;
-using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
-using EmployeeManagementSystem.DataAccess.Repositories;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.Business.Services
 {
@@ -26,23 +20,22 @@ namespace EmployeeManagementSystem.Business.Services
             _logger = logger;
         }
 
-
         // get assigned employee from employee code
-        public async Task<EmployeeDetailsResponseDto> GetAssignedEmployeeAsync(string managerCode, string employeeCode)
+        public async Task<Result<EmployeeDetailsResponseDto>> GetAssignedEmployeeAsync(string managerCode, string employeeCode)
         {
             _logger.LogInformation("Getting an assigned employee {employeeCode} for manager {managerCode}", employeeCode, managerCode);
             var manager = await _employeeRepository.GetByEmployeeCodeAsync(managerCode);
-            if(manager == null)
+            if (manager == null)
             {
                 _logger.LogWarning("The given manager code is incorrect please check it : {managerCode}", managerCode);
-                throw new NotFoundException("Manager not found!!!");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Manager not found!");
             }
 
             var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
-            if(employee == null)
+            if (employee == null)
             {
                 _logger.LogWarning("Getting employee for the manager failed as no employee exist for given employeeCOde : {employeeCode}", employeeCode);
-                throw new NotFoundException("No employee found please check the code!!!");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "No employee found please check the code!");
             }
 
             var response = await _managerRepository.GetAssignedEmployeeAsync(manager.Id, employeeCode);
@@ -53,10 +46,10 @@ namespace EmployeeManagementSystem.Business.Services
                     employeeCode,
                     managerCode);
 
-                throw new NotFoundException("Employee not found.");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee not found.");
             }
 
-            return new EmployeeDetailsResponseDto
+            return Result<EmployeeDetailsResponseDto>.Ok(new EmployeeDetailsResponseDto
             {
                 EmployeeCode = response.EmployeeCode,
                 FirstName = response.FirstName,
@@ -67,11 +60,11 @@ namespace EmployeeManagementSystem.Business.Services
                 Status = response.Status,
                 CreatedAt = response.CreatedAt,
                 UpdatedAt = response.UpdatedAt
-            };
+            });
         }
 
         // show all assigned employees with sorting searching paging
-        public async Task<PagedResponse<EmployeeListDto>> GetAssignedEmployeesAsync(string managerCode, EmployeeQueryParameters employeeQueryParameters)
+        public async Task<Result<PagedResponse<EmployeeListDto>>> GetAssignedEmployeesAsync(string managerCode, EmployeeQueryParameters employeeQueryParameters)
         {
             _logger.LogInformation(
                 "Getting employees assigned under manager: {managerCode}",
@@ -85,9 +78,8 @@ namespace EmployeeManagementSystem.Business.Services
                     "Getting employees failed. Manager with code {managerCode} was not found.",
                     managerCode);
 
-                throw new NotFoundException("Manager not found.");
+                return Result<PagedResponse<EmployeeListDto>>.Fail(ErrorType.NotFound, "Manager not found.");
             }
-
 
             var (employees, totalCount) =
                 await _managerRepository.GetAssignedEmployeesAsync(
@@ -112,13 +104,13 @@ namespace EmployeeManagementSystem.Business.Services
                 totalCount,
                 managerCode);
 
-            return new PagedResponse<EmployeeListDto>
+            return Result<PagedResponse<EmployeeListDto>>.Ok(new PagedResponse<EmployeeListDto>
             {
                 Data = employeeDtos,
                 TotalCount = totalCount,
                 PageNumber = employeeQueryParameters.PageNumber,
                 PageSize = employeeQueryParameters.PageSize
-            };
+            });
         }
     }
 }

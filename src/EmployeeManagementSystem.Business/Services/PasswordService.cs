@@ -1,8 +1,4 @@
-﻿using BCrypt.Net;
-using EmployeeManagementSystem.Business.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EmployeeManagementSystem.Business.Interfaces;
 
 namespace EmployeeManagementSystem.Business.Services
 {
@@ -29,7 +25,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             var allChars = upper + lower + numbers + special;
             var random = new Random();
-                
+
             var password = new List<char>
             {
                 upper[random.Next(upper.Length)],

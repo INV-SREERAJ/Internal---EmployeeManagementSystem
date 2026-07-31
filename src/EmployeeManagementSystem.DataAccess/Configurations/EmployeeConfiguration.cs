@@ -2,9 +2,6 @@
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.DataAccess.Configurations
 {
@@ -59,7 +56,7 @@ namespace EmployeeManagementSystem.DataAccess.Configurations
                    .HasForeignKey(u => u.ManagerId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            
-            }
+
+        }
     }
 }

@@ -1,13 +1,11 @@
-﻿using EmployeeManagementSystem.Business.DTOs.Admin;
-using EmployeeManagementSystem.Business.GlobalExceptionHandler;
+using EmployeeManagementSystem.Business.Common;
+using EmployeeManagementSystem.Business.DTOs.Admin;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Entities;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Data;
-using System.Net.NetworkInformation;
 
 namespace EmployeeManagementSystem.Business.Services
 {
@@ -33,22 +31,25 @@ namespace EmployeeManagementSystem.Business.Services
         }
 
         //create employee
-        public async Task<CreateEmployeeResponse> CreateEmployeeAsync(CreateEmployeeRequest request)
+        public async Task<Result<CreateEmployeeResponse>> CreateEmployeeAsync(CreateEmployeeRequest request)
         {
             _logger.LogInformation("Creating employee {Email}", request.Email);
-
 
             var emailExists = await _employeeRepository.EmailExistsAsync(request.Email);
             if (emailExists)
             {
                 _logger.LogWarning("Employee creation failed, email already exists: {Email}", request.Email);
-                throw new ConflictException("Email already exists..");
+                return Result<CreateEmployeeResponse>.Fail(
+                        ErrorType.Conflict,
+                        "Email already exists.");
             }
 
             if (request.Role == Role.Admin)
             {
                 _logger.LogWarning("Employee cannot be created as the role specified is Admin.");
-                throw new ConflictException("Role cannot be admin");
+                return Result<CreateEmployeeResponse>.Fail(
+                        ErrorType.Conflict,
+                        "Employee cannot be created as Admin.");
             }
 
             int? managerId = null;
@@ -60,26 +61,25 @@ namespace EmployeeManagementSystem.Business.Services
                 if (manager == null)
                 {
                     _logger.LogWarning("Employee creation failed because no manager exist at given manager code: {ManagerEmployeeCode}", request.ManagerEmployeeCode);
-                    throw new NotFoundException("Manager not found.");
+                    return Result<CreateEmployeeResponse>.Fail(
+                        ErrorType.NotFound,
+                        "Manager not found, please check the managercode.");
                 }
 
                 if (manager.Status != EmployeeStatus.Active)
                 {
                     _logger.LogWarning("Employee creation failed because manager is either deleted or inactive. manager code: {ManagerEmployeeCode}", request.ManagerEmployeeCode);
-                    throw new ConflictException("Selected manager is inactive.");
-
+                    return Result<CreateEmployeeResponse>.Fail(ErrorType.Conflict, "Manager is not active.");
                 }
 
                 if (manager.Role != Role.Manager && manager.Role != Role.Admin)
                 {
                     _logger.LogWarning("Employee creation failed because an employee cannot be a manager. manager code: {ManagerEmployeeCode}", request.ManagerEmployeeCode);
-                    throw new ConflictException("Selected employee cannot be assigned as manager.");
+                    return Result<CreateEmployeeResponse>.Fail(ErrorType.Conflict, "Specified manager role is invalid.");
                 }
 
                 managerId = manager.Id;
             }
-
-
 
             var temporaryPassword = _passwordService.GenerateTemporaryPassword();
 
@@ -106,8 +106,12 @@ namespace EmployeeManagementSystem.Business.Services
             };
             await _employeeRepository.AddEmployeeAsync(employee);
 
-
-            employee.EmployeeCode = await _employeeCodeGenerator.GenerateEmployeeCodeAsync(request.Role);
+            var codeResult = await _employeeCodeGenerator.GenerateEmployeeCodeAsync(request.Role);
+            if (!codeResult.Success || codeResult.Value == null)
+            {
+                return Result<CreateEmployeeResponse>.Fail(codeResult.ErrorType, codeResult.Error ?? "Failed to generate employee code.");
+            }
+            employee.EmployeeCode = codeResult.Value;
 
             await _employeeRepository.UpdateAsync(employee);
 
@@ -117,28 +121,28 @@ namespace EmployeeManagementSystem.Business.Services
             try
             {
                 await _emailService.WelcomeEmailAsync(
-                employee.Email,
-                $"{employee.FirstName} {employee.LastName}",
-                temporaryPassword);
+                    employee.Email,
+                    $"{employee.FirstName} {employee.LastName}",
+                    temporaryPassword);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to send welcome email for employee {EmployeeCode}", employee.EmployeeCode);
             }
 
-
-            return new CreateEmployeeResponse
-            {
-                EmployeeCode = employee.EmployeeCode,
-                FullName = $"{employee.FirstName} {employee.LastName}",
-                Email = employee.Email,
-                Role = employee.Role.ToString(),
-                Message = "User created successfully."
-            };
+            return Result<CreateEmployeeResponse>.Ok(
+                new CreateEmployeeResponse
+                {
+                    EmployeeCode = employee.EmployeeCode,
+                    FullName = $"{employee.FirstName} {employee.LastName}",
+                    Email = employee.Email,
+                    Role = employee.Role.ToString(),
+                    Message = "User created successfully."
+                });
         }
 
         // get all employees including paging, searching, sorting
-        public async Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters)
+        public async Task<Result<PagedResponse<EmployeeListDto>>> GetEmployeesAsync(EmployeeQueryParameters parameters)
         {
             var (employees, totalCount) =
                 await _adminRepository.GetEmployeesAsync(parameters);
@@ -156,47 +160,46 @@ namespace EmployeeManagementSystem.Business.Services
                 Status = employee.Status
             });
 
-            return new PagedResponse<EmployeeListDto>
-            {
-                Data = employeeDtos,
-                PageNumber = parameters.PageNumber,
-                PageSize = parameters.PageSize,
-                TotalCount = totalCount,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize)
-            };
+            return Result<PagedResponse<EmployeeListDto>>.Ok(
+                new PagedResponse<EmployeeListDto>
+                {
+                    Data = employeeDtos,
+                    PageNumber = parameters.PageNumber,
+                    PageSize = parameters.PageSize,
+                    TotalCount = totalCount,
+                    TotalPages = (int)Math.Ceiling(totalCount / (double)parameters.PageSize)
+                });
         }
 
-
         // change status
-        public async Task<bool> UpdateEmployeeStatusAsync(string employeeCode, EmployeeStatus status, string currentEmployeeCode)
+        public async Task<Result<bool>> UpdateEmployeeStatusAsync(string employeeCode, EmployeeStatus status, string currentEmployeeCode)
         {
             _logger.LogInformation("Changing status of employee {EmployeeCode}", employeeCode);
             var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
             if (employee == null)
             {
-
                 _logger.LogWarning(
                     "Status update failed. Employee {EmployeeCode} not found.",
                      employeeCode);
-                throw new NotFoundException("The user is not found!!!");
+                return Result<bool>.Fail(ErrorType.NotFound, "EmployeeCode is wrong.");
             }
 
             //trying to change his own staus
             if (status != EmployeeStatus.Active && employee.EmployeeCode == currentEmployeeCode)
             {
                 _logger.LogWarning("Employee {EmployeeCode} attempted to disable their own account.", currentEmployeeCode);
-                throw new ConflictException("You cannot disable your own account.");
+                return Result<bool>.Fail(ErrorType.Conflict, "Cant disable your own account.");
             }
 
             if (status != EmployeeStatus.Active && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
             {
                 _logger.LogInformation("Tried to disable manager {employeeCode} but has active reporting employees thereby failed the action.", employeeCode);
-                throw new ConflictException("Cant disable a manager with active employees reporting. Please change the reporing manager of the employees and try again."); ;
+                return Result<bool>.Fail(ErrorType.Conflict, "Cant disable manager with active direct reports.");
             }
 
             //nothing to change
             if (employee.Status == status)
-                return false;
+                return Result<bool>.Ok(false);
 
             employee.Status = status;
             employee.UpdatedAt = DateTime.UtcNow;
@@ -210,19 +213,18 @@ namespace EmployeeManagementSystem.Business.Services
                 "Employee {EmployeeCode} status changed to {Status}",
                 employee.EmployeeCode,
                 employee.Status);
-            return true;
+            return Result<bool>.Ok(true);
         }
 
-
         // get a single employee
-        public async Task<EmployeeDetailsResponseDto> GetEmployeeDetailsAsync(string employeeCode)
+        public async Task<Result<EmployeeDetailsResponseDto>> GetEmployeeDetailsAsync(string employeeCode)
         {
             var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
             if (employee == null)
             {
-                throw new NotFoundException("There is no such employee!");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee doesnt exist check the employee code.");
             }
-            return new EmployeeDetailsResponseDto
+            return Result<EmployeeDetailsResponseDto>.Ok(new EmployeeDetailsResponseDto
             {
                 EmployeeCode = employeeCode,
                 FirstName = employee.FirstName,
@@ -233,34 +235,32 @@ namespace EmployeeManagementSystem.Business.Services
                 Status = employee.Status,
                 CreatedAt = employee.CreatedAt,
                 UpdatedAt = employee.UpdatedAt
-            };
+            });
         }
 
-
         // edit an employee
-        public async Task<EmployeeDetailsResponseDto> UpdateEmployeeAsync(string employeeCode, UpdateEmployeeRequest request)
+        public async Task<Result<EmployeeDetailsResponseDto>> UpdateEmployeeAsync(string employeeCode, UpdateEmployeeRequest request)
         {
-
             _logger.LogInformation("Updating employee {EmployeeCode}", employeeCode);
 
             var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
             if (employee == null)
             {
                 _logger.LogWarning("Update failed. Employee {EmployeeCode} not found.", employeeCode);
-                throw new NotFoundException("The Employee is not found, kindly check the Employee Code");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee not found, check the employeeCode.");
             }
 
             //admin cant change his role (only 1 admin and if role changes the system breaks)
             if (employee.Role == Role.Admin && request.Role != Role.Admin)
             {
                 _logger.LogWarning("The only admin cannot be changed to another role.");
-                throw new ConflictException("The only admin cannot be changed to another role.");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.Conflict, "Cant change role of admin.");
             }
 
             if (employee.Role != Role.Employee && request.Role == Role.Employee && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
             {
                 _logger.LogWarning("Update employee failed for {employeeCode} since manager has active employees reporting", employeeCode);
-                throw new ConflictException("Cant change the role of this employee as there are employees reporting to him");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.Conflict, "Cant change the role as manager has active employees reporting, please change the reporting manager and try again.");
             }
 
             // check if the email is already present (excluding the current email)
@@ -269,14 +269,14 @@ namespace EmployeeManagementSystem.Business.Services
                 if (await _employeeRepository.EmailExistsAsync(request.Email))
                 {
                     _logger.LogWarning("The email trying to change to {Email} already exists", request.Email);
-                    throw new ConflictException("Email already exists.");
+                    return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.Conflict, "Email already exists.");
                 }
             }
 
             if (request.Role == Role.Admin)
             {
                 _logger.LogWarning("cant change an employee to admin");
-                throw new ConflictException("Cant change an Employee to Admin");
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.Conflict, "Cant change role of admin.");
             }
 
             employee.FirstName = request.FirstName;
@@ -291,7 +291,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             _logger.LogInformation("Employee {EmployeeCode} updated successfully.", employeeCode);
 
-            return new EmployeeDetailsResponseDto
+            return Result<EmployeeDetailsResponseDto>.Ok(new EmployeeDetailsResponseDto
             {
                 FirstName = employee.FirstName,
                 LastName = employee.LastName,
@@ -302,11 +302,11 @@ namespace EmployeeManagementSystem.Business.Services
                 Status = employee.Status,
                 CreatedAt = employee.CreatedAt,
                 UpdatedAt = employee.UpdatedAt
-            };
+            });
         }
-
+        
         //soft delete
-        public async Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode)
+        public async Task<Result> DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode)
         {
             _logger.LogInformation("In delete to delete {employeeCode}", employeeCode);
 
@@ -315,25 +315,25 @@ namespace EmployeeManagementSystem.Business.Services
             if (currentEmployeeCode == employeeCode)
             {
                 _logger.LogWarning("Employee {EmployeeCode} attempted to delete their own account.", employeeCode);
-                throw new ConflictException("You cant delete your own account!");
+                return Result.Fail(ErrorType.Conflict, "Cant delete your own account.");
             }
 
             if (employee == null)
             {
                 _logger.LogWarning("Delete failed, no employee for code : {employeeCode}", employeeCode);
-                throw new NotFoundException("Employee doesnt exist, please check the employeecode");
+                return Result.Fail(ErrorType.NotFound, "Employee not found.");
             }
 
             if (employee.Status == EmployeeStatus.Deleted)
             {
                 _logger.LogWarning("Delete failed. Employee {EmployeeCode} is already deleted.", employeeCode);
-                throw new ConflictException("Employee is already deleted.");
+                return Result.Fail(ErrorType.Conflict, "Employee is already deleted.");
             }
 
-            if(employee.Role == Role.Manager && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
+            if (employee.Role == Role.Manager && await _managerRepository.HasActiveDirectReportsAsync(employee.Id))
             {
                 _logger.LogWarning("Manager deletion failed {employeeCode}", employeeCode);
-                throw new ConflictException("Manager cant be deleted, please change the employees reporting and try again.");
+                return Result.Fail(ErrorType.Conflict, "Manager with active reporting employees cant be deleted, please change the reporting manager and try again");
             }
 
             employee.Status = EmployeeStatus.Deleted;
@@ -343,61 +343,56 @@ namespace EmployeeManagementSystem.Business.Services
             await _employeeRepository.UpdateAsync(employee);
             _logger.LogInformation("Successfully deleted {employeeCode}", employeeCode);
 
+            return Result.Ok();
         }
 
         // change manager
-        public async Task ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode)
+        public async Task<Result> ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode)
         {
             _logger.LogInformation("Changing reporting manager for employee {EmployeeCode}", employeeCode);
             var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
             if (employee == null)
             {
                 _logger.LogWarning("Change in RM failed, {EmployeeCode} does not exist", employeeCode);
-                throw new NotFoundException("Employee not found please check the EmployeeCode");
+                return Result.Fail(ErrorType.NotFound, "Change in RM failed: employee does not exist");
             }
 
             var manager = await _adminRepository.GetEmployeeByEmployeeCodeAsync(managerEmployeeCode);
 
-
             if (manager == null)
             {
                 _logger.LogWarning("Change in RM failed, {managerEmployeeCode} does not exist", managerEmployeeCode);
-                throw new NotFoundException("Manager not found please check the EmployeeCode");
+                return Result.Fail(ErrorType.NotFound, "Manager not found please check the EmployeeCode");
             }
 
             if (employeeCode == managerEmployeeCode)
             {
                 _logger.LogWarning("Change in RM failed, Manager and employee is same");
-                throw new ConflictException("Manager and employee has to be differnet");
+                return Result.Fail(ErrorType.Conflict, "Manager and employee has to be different");
             }
 
             if (manager.Role != Role.Admin && manager.Role != Role.Manager)
             {
                 _logger.LogWarning("Change in RM failed, {managerEmployeeCode} is an employee and cannot be a manager", managerEmployeeCode);
-                throw new ConflictException("This employee cannot be a manager.");
+                return Result.Fail(ErrorType.Conflict, "This employee cannot be a manager.");
             }
 
             if (manager.Status != EmployeeStatus.Active)
             {
                 _logger.LogWarning("Change in RM failed, {managerEmployeeCode} is either deleted or inactive", managerEmployeeCode);
-                throw new ConflictException("Selected manager is inactive.");
+                return Result.Fail(ErrorType.Conflict, "Selected manager is inactive.");
             }
-
-
-
-            //if (employee.Role == Role.Manager && manager.Role != Role.Admin)
-            //    throw new ConflictException("Manager can only have admin as manager");
 
             if (employee.Role == Role.Admin)
             {
                 _logger.LogWarning("Change in RM failed, {EmployeeCode} is admin and admin cant have manager", employeeCode);
-                throw new ConflictException("Admin cannot have a manager");
+                return Result.Fail(ErrorType.Conflict, "Admin cannot have a manager");
             }
 
             if (employee.ManagerId == manager.Id)
             {
                 _logger.LogWarning("Change in RM failed, the employee was already assigned to the manager");
-                throw new ConflictException("Employee is already assigned to this manager.");
+                return Result.Fail(ErrorType.Conflict, "Employee is already assigned to this manager.");
             }
 
             employee.ManagerId = manager.Id;
@@ -405,13 +400,12 @@ namespace EmployeeManagementSystem.Business.Services
 
             await _employeeRepository.UpdateAsync(employee);
             _logger.LogInformation("Employee {EmployeeCode} assigned to manager {ManagerCode}", employee.EmployeeCode, manager.EmployeeCode);
+
+            return Result.Ok();
         }
 
-
-
-
         //reset a users password
-        public async Task ResetUserPasswordAsync(string employeeCode)
+        public async Task<Result> ResetUserPasswordAsync(string employeeCode)
         {
             _logger.LogInformation("Resetting the password of {employeeCode}", employeeCode);
 
@@ -419,7 +413,7 @@ namespace EmployeeManagementSystem.Business.Services
             if (employee == null)
             {
                 _logger.LogInformation("Password reset failed. No employee found with : {employeeCode}", employeeCode);
-                throw new NotFoundException("User not found, check the employee code...");
+                return Result.Fail(ErrorType.NotFound, "User not found, check the employee code...");
             }
 
             var temp = _passwordService.GenerateTemporaryPassword();
@@ -431,22 +425,10 @@ namespace EmployeeManagementSystem.Business.Services
 
             await _employeeRepository.UpdateAsync(employee);
 
-            try
-            {
-                await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
+            await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
 
-                _logger.LogInformation("Password reset successfully for user: {EmployeeCode}.", employeeCode);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex,
-                    "Password was reset for user {EmployeeCode}, but the reset email could not be sent.",
-                    employeeCode);
-
-                throw new InvalidOperationException(
-                    "The password was reset successfully, but the reset email could not be sent. Please retry the password reset.");
-            }
             _logger.LogInformation("Password resetted for user: {employeeCode}, successfully.", employeeCode);
+            return Result.Ok();
         }
     }
 }

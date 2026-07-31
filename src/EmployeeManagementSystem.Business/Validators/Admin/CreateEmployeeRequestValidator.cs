@@ -1,5 +1,4 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
-using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using FluentValidation;
 
 namespace EmployeeManagementSystem.Business.Validators.Admin

@@ -1,28 +1,25 @@
-﻿using EmployeeManagementSystem.Business.DTOs.Admin;
+﻿using EmployeeManagementSystem.Business.Common;
+using EmployeeManagementSystem.Business.DTOs.Admin;
 using EmployeeManagementSystem.DataAccess.common;
-using EmployeeManagementSystem.DataAccess.Entities;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.Business.Interfaces
 {
     public interface IAdminService
     {
-        Task<CreateEmployeeResponse> CreateEmployeeAsync(CreateEmployeeRequest request);
+        Task<Result<CreateEmployeeResponse>> CreateEmployeeAsync(CreateEmployeeRequest request);
 
-        Task<PagedResponse<EmployeeListDto>> GetEmployeesAsync(EmployeeQueryParameters parameters);
-        Task<bool> UpdateEmployeeStatusAsync(string employeeCode, EmployeeStatus status, string currentEmployeeCode);
+        Task<Result<PagedResponse<EmployeeListDto>>> GetEmployeesAsync(EmployeeQueryParameters parameters);
+        Task<Result<bool>> UpdateEmployeeStatusAsync(string employeeCode, EmployeeStatus status, string currentEmployeeCode);
 
-        Task<EmployeeDetailsResponseDto> GetEmployeeDetailsAsync(string employeeCode);
+        Task<Result<EmployeeDetailsResponseDto>> GetEmployeeDetailsAsync(string employeeCode);
 
-        Task<EmployeeDetailsResponseDto> UpdateEmployeeAsync(string employeeCode, UpdateEmployeeRequest request);
+        Task<Result<EmployeeDetailsResponseDto>> UpdateEmployeeAsync(string employeeCode, UpdateEmployeeRequest request);
 
-        Task DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode);
+        Task<Result> DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode);
 
-        Task ChangeReportingManagerAsync(string  employeeCode, string managerEmployeeCode);
+        Task<Result> ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode);
 
-        Task ResetUserPasswordAsync(string employeeCode);
+        Task<Result> ResetUserPasswordAsync(string employeeCode);
     }
 }
