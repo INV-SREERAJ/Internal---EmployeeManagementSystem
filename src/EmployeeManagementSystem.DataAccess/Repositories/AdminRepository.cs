@@ -95,8 +95,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         public async Task<Employee?> GetEmployeeByEmployeeCodeAsync(string employeeCode)
         {
             return await _context.Employees.FirstOrDefaultAsync(u =>
-                u.EmployeeCode == employeeCode &&
-                u.Status != EmployeeStatus.Deleted);
+                u.EmployeeCode == employeeCode);
         }
 
 

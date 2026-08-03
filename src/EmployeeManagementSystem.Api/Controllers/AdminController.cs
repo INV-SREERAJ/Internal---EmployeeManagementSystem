@@ -4,7 +4,6 @@ using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Api.Controllers
@@ -181,7 +180,7 @@ namespace EmployeeManagementSystem.Api.Controllers
         }
 
         //reset password and send email
-        [HttpPost("employees/{employeeCode}")]
+        [HttpPost("employees/{employeeCode}/reset-password")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

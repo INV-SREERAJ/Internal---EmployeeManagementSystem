@@ -3,7 +3,6 @@ using EmployeeManagementSystem.Business.DTOs.Profile;
 using EmployeeManagementSystem.Business.DTOs.ProfileResponseDto;
 using EmployeeManagementSystem.Business.Interfaces;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Api.Controllers

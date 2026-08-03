@@ -26,7 +26,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         public async Task<bool> EmailExistsAsync(string email)
         {
             return await _context.Employees
-                .AnyAsync(e => e.Email == email && e.Status != EmployeeStatus.Deleted);
+                .AnyAsync(e => e.Email == email);
         }
 
         public async Task<Employee?> GetByEmailAsync(string email)

@@ -45,7 +45,7 @@ namespace EmployeeManagementSystem.Api.Middleware
                 return;
             }
 
-            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            
 
             var path = context.Request.Path.Value?.ToLower();
 
@@ -61,7 +61,7 @@ namespace EmployeeManagementSystem.Api.Middleware
                 await _next(context);
                 return;
             }
-
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
             await context.Response.WriteAsJsonAsync(new
             {
                 Message = "You must change your password before accessing the application."

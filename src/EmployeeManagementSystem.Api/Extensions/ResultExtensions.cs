@@ -1,5 +1,4 @@
 using EmployeeManagementSystem.Business.Common;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Api.Extensions

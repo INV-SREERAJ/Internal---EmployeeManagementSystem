@@ -181,7 +181,7 @@ namespace EmployeeManagementSystem.Business.Services
                 _logger.LogWarning(
                     "Status update failed. Employee {EmployeeCode} not found.",
                      employeeCode);
-                return Result<bool>.Fail(ErrorType.NotFound, "EmployeeCode is wrong.");
+                return Result<bool>.Fail(ErrorType.NotFound, "Employee not found. EmployeeCode is wrong.");
             }
 
             //trying to change his own staus
@@ -224,6 +224,12 @@ namespace EmployeeManagementSystem.Business.Services
             {
                 return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee doesnt exist check the employee code.");
             }
+
+            if(employee.Status == EmployeeStatus.Deleted)
+            {
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee is deleted.");
+            }
+
             return Result<EmployeeDetailsResponseDto>.Ok(new EmployeeDetailsResponseDto
             {
                 EmployeeCode = employeeCode,
@@ -248,6 +254,12 @@ namespace EmployeeManagementSystem.Business.Services
             {
                 _logger.LogWarning("Update failed. Employee {EmployeeCode} not found.", employeeCode);
                 return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee not found, check the employeeCode.");
+            }
+
+            if(employee.Status == EmployeeStatus.Deleted)
+            {
+                _logger.LogWarning("Update failed. Employee {EmployeeCode} is deleted.", employeeCode);
+                return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee is deleted, activate him.");
             }
 
             //admin cant change his role (only 1 admin and if role changes the system breaks)
@@ -304,19 +316,19 @@ namespace EmployeeManagementSystem.Business.Services
                 UpdatedAt = employee.UpdatedAt
             });
         }
-        
+
         //soft delete
         public async Task<Result> DeleteEmployeeAsync(string employeeCode, string currentEmployeeCode)
         {
             _logger.LogInformation("In delete to delete {employeeCode}", employeeCode);
-
-            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
 
             if (currentEmployeeCode == employeeCode)
             {
                 _logger.LogWarning("Employee {EmployeeCode} attempted to delete their own account.", employeeCode);
                 return Result.Fail(ErrorType.Conflict, "Cant delete your own account.");
             }
+
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
 
             if (employee == null)
             {
@@ -350,11 +362,19 @@ namespace EmployeeManagementSystem.Business.Services
         public async Task<Result> ChangeReportingManagerAsync(string employeeCode, string managerEmployeeCode)
         {
             _logger.LogInformation("Changing reporting manager for employee {EmployeeCode}", employeeCode);
-            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
-            if (employee == null)
+
+            if (employeeCode == managerEmployeeCode)
             {
-                _logger.LogWarning("Change in RM failed, {EmployeeCode} does not exist", employeeCode);
-                return Result.Fail(ErrorType.NotFound, "Change in RM failed: employee does not exist");
+                _logger.LogWarning("Change in RM failed, Manager and employee is same");
+                return Result.Fail(ErrorType.Conflict, "Manager and employee has to be different");
+            }
+
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
+
+            if (employee == null || employee.Status==EmployeeStatus.Deleted)
+            {
+                _logger.LogWarning("Change in RM failed, {EmployeeCode} is either deleted or does not exist", employeeCode);
+                return Result.Fail(ErrorType.NotFound, "Change in RM failed: employee does not exist or is deleted");
             }
 
             var manager = await _adminRepository.GetEmployeeByEmployeeCodeAsync(managerEmployeeCode);
@@ -365,10 +385,10 @@ namespace EmployeeManagementSystem.Business.Services
                 return Result.Fail(ErrorType.NotFound, "Manager not found please check the EmployeeCode");
             }
 
-            if (employeeCode == managerEmployeeCode)
+            if (manager.Status == EmployeeStatus.Deleted)
             {
-                _logger.LogWarning("Change in RM failed, Manager and employee is same");
-                return Result.Fail(ErrorType.Conflict, "Manager and employee has to be different");
+                _logger.LogWarning("Change in RM failed, {managerEmployeeCode} is deleted.", managerEmployeeCode);
+                return Result.Fail(ErrorType.NotFound, "Manager already deleted, please check the EmployeeCode");
             }
 
             if (manager.Role != Role.Admin && manager.Role != Role.Manager)
@@ -409,11 +429,17 @@ namespace EmployeeManagementSystem.Business.Services
         {
             _logger.LogInformation("Resetting the password of {employeeCode}", employeeCode);
 
-            var employee = await _employeeRepository.GetByEmployeeCodeAsync(employeeCode);
+            var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
             if (employee == null)
             {
                 _logger.LogInformation("Password reset failed. No employee found with : {employeeCode}", employeeCode);
                 return Result.Fail(ErrorType.NotFound, "User not found, check the employee code...");
+            }
+
+            if(employee.Status == EmployeeStatus.Deleted)
+            {
+                _logger.LogInformation("Reset password failed, the employee was deleted {employeeCode}", employeeCode);
+                return Result.Fail(ErrorType.Conflict, "User was deleted, cant reset the password.");
             }
 
             var temp = _passwordService.GenerateTemporaryPassword();
@@ -424,8 +450,14 @@ namespace EmployeeManagementSystem.Business.Services
             employee.TokenVersion++;
 
             await _employeeRepository.UpdateAsync(employee);
-
-            await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
+            try
+            {
+                await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogInformation("Reset password Email sending failed.");
+            }
 
             _logger.LogInformation("Password resetted for user: {employeeCode}, successfully.", employeeCode);
             return Result.Ok();
