@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using EmployeeManagementSystem.DataAccess.Entities.Enums;
+﻿using EmployeeManagementSystem.DataAccess.Entities.Enums;
 
 namespace EmployeeManagementSystem.DataAccess.Entities
 {
@@ -23,7 +20,7 @@ namespace EmployeeManagementSystem.DataAccess.Entities
 
         //used to make the user reset the password in the initial login
         public bool MustChangePassword { get; set; }
-        
+
         public EmployeeStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

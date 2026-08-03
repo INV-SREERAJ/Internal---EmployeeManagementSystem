@@ -1,8 +1,4 @@
-﻿    using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace EmployeeManagementSystem.Business.Configuration
+﻿namespace EmployeeManagementSystem.Business.Configuration
 {
     public class JwtSettings
     {

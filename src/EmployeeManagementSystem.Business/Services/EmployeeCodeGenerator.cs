@@ -1,9 +1,7 @@
-﻿using EmployeeManagementSystem.Business.Interfaces;
+using EmployeeManagementSystem.Business.Common;
+using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.Business.Services
 {
@@ -18,7 +16,7 @@ namespace EmployeeManagementSystem.Business.Services
 
 
         // employee code of the form EMP20260001
-        public async Task<string> GenerateEmployeeCodeAsync(Role role)
+        public async Task<Result<string>> GenerateEmployeeCodeAsync(Role role)
         {
             string prefix = "EMP";
 
@@ -36,7 +34,7 @@ namespace EmployeeManagementSystem.Business.Services
                 nextNumber = int.Parse(sequence) + 1;
             }
 
-            return $"{prefix}{year}{nextNumber:D4}";
+            return Result<string>.Ok($"{prefix}{year}{nextNumber:D4}");
         }
     }
 }

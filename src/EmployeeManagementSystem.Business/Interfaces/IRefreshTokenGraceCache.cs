@@ -1,5 +1,4 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Auth;
-using System;
 
 namespace EmployeeManagementSystem.Business.Interfaces
 {

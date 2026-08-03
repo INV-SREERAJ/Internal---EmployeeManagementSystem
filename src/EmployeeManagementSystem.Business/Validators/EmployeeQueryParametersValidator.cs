@@ -1,9 +1,6 @@
 ﻿using EmployeeManagementSystem.DataAccess.common;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.Business.Validators
 {
@@ -20,7 +17,7 @@ namespace EmployeeManagementSystem.Business.Validators
             RuleFor(x => x.SortBy)
                 .Must(sort =>
                     string.IsNullOrWhiteSpace(sort) ||
-                    new[] { "name", "email", "role", "employeeCode","createdAt" }
+                    new[] { "name", "email", "role", "employeeCode", "createdAt" }
                         .Contains(sort, StringComparer.OrdinalIgnoreCase))
                 .WithMessage("Invalid sort field.");
 

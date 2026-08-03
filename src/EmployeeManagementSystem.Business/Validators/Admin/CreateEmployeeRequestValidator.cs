@@ -1,5 +1,4 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
-using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using FluentValidation;
 
 namespace EmployeeManagementSystem.Business.Validators.Admin
@@ -41,7 +40,7 @@ namespace EmployeeManagementSystem.Business.Validators.Admin
             RuleFor(x => x.ManagerEmployeeCode)
                 .Matches(@"^EMP\d{8}$")
                 .When(x => !string.IsNullOrWhiteSpace(x.ManagerEmployeeCode))
-                .WithMessage("Manager employee code must be in the format EMP12345.");
+                .WithMessage("Manager employee code must be in the format EMP2026XXXX.");
         }
     }
 }

@@ -1,12 +1,10 @@
-﻿using EmployeeManagementSystem.DataAccess.Entities.Enums;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using EmployeeManagementSystem.Business.Common;
+using EmployeeManagementSystem.DataAccess.Entities.Enums;
 
 namespace EmployeeManagementSystem.Business.Interfaces
 {
     public interface IEmployeeCodeGenerator
     {
-        Task<string> GenerateEmployeeCodeAsync(Role role);
+        Task<Result<string>> GenerateEmployeeCodeAsync(Role role);
     }
 }

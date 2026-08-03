@@ -1,8 +1,5 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Admin;
 using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace EmployeeManagementSystem.Business.Validators.Admin
 {

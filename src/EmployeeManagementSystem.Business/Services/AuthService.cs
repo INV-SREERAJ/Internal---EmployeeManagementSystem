@@ -1,7 +1,4 @@
-﻿
-using EmployeeManagementSystem.Business.Configuration;
-using EmployeeManagementSystem.Business.DTOs.Auth;
-using EmployeeManagementSystem.Business.DTOs.EmployeeManagementSystem.Business.DTOs.Authentication;
+﻿using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.Entities.Enums;
 using EmployeeManagementSystem.DataAccess.Interfaces;
@@ -26,12 +23,12 @@ namespace EmployeeManagementSystem.Business.Services
             _graceCache = cache;
             _logger = logger;
         }
-        
+
 
         //login
         public async Task<LoginResponseDto> LoginAsync(LoginRequestDto request)
         {
-            _logger.LogInformation("Login attempt for {Email}",request.Email);
+            _logger.LogInformation("Login attempt for {Email}", request.Email);
 
             var employee = await _employeeRepository.GetByEmailAsync(request.Email);
 
@@ -56,7 +53,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (!isPasswordValid)
             {
-                _logger.LogWarning("Invalid password for {Email}",request.Email);
+                _logger.LogWarning("Invalid password for {Email}", request.Email);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -68,7 +65,7 @@ namespace EmployeeManagementSystem.Business.Services
             // Check if account is deleted
             if (employee.Status == EmployeeStatus.Deleted)
             {
-                _logger.LogWarning("Deleted employee attempted login. EmployeeCode: {EmployeeCode}",employee.EmployeeCode);
+                _logger.LogWarning("Deleted employee attempted login. EmployeeCode: {EmployeeCode}", employee.EmployeeCode);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -80,7 +77,7 @@ namespace EmployeeManagementSystem.Business.Services
             // Check if account is inactive
             if (employee.Status == EmployeeStatus.Inactive)
             {
-                _logger.LogWarning("Inactive employee attempted login. EmployeeCode: {EmployeeCode}",employee.EmployeeCode);
+                _logger.LogWarning("Inactive employee attempted login. EmployeeCode: {EmployeeCode}", employee.EmployeeCode);
                 return new LoginResponseDto
                 {
                     Success = false,
@@ -90,7 +87,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
 
             //successful login
-            _logger.LogInformation("Employee {EmployeeCode} logged in successfully",employee.EmployeeCode);
+            _logger.LogInformation("Employee {EmployeeCode} logged in successfully", employee.EmployeeCode);
 
             // Revoke all previous refresh tokens
             _logger.LogInformation("Revoking previous refresh tokens for {EmployeeCode}", employee.EmployeeCode);
@@ -132,11 +129,11 @@ namespace EmployeeManagementSystem.Business.Services
                 //taking the pricipal from the token passed
                 principal = _jwtService.GetPrincipalFromToken(request.RefreshToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogWarning(
                 ex,
-                "Invalid refresh token received."); 
+                "Invalid refresh token received.");
 
                 return new RefreshTokenResponseDto
                 {
@@ -193,7 +190,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (employee.Status != EmployeeStatus.Active)
             {
-                _logger.LogWarning("Refresh denied for inactive employee {EmployeeCode}.",employee.EmployeeCode);
+                _logger.LogWarning("Refresh denied for inactive employee {EmployeeCode}.", employee.EmployeeCode);
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -205,11 +202,11 @@ namespace EmployeeManagementSystem.Business.Services
             var tokenVersion = int.Parse(
                 principal.FindFirst("TokenVersion")!.Value);
 
-            
+
             //checking if the tokenversion in refresh token is matching the one in the db
             if (tokenVersion != employee.TokenVersion)
             {
-                _logger.LogWarning("Refresh token revoked for {EmployeeCode}.",employee.EmployeeCode);
+                _logger.LogWarning("Refresh token revoked for {EmployeeCode}.", employee.EmployeeCode);
                 return new RefreshTokenResponseDto
                 {
                     Success = false,
@@ -224,7 +221,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             if (shouldRotate)
             {
-                _logger.LogInformation("Refresh token rotated for {EmployeeCode}.",employee.EmployeeCode);
+                _logger.LogInformation("Refresh token rotated for {EmployeeCode}.", employee.EmployeeCode);
                 employee.TokenVersion++;
 
                 await _employeeRepository.UpdateAsync(employee);
@@ -242,7 +239,7 @@ namespace EmployeeManagementSystem.Business.Services
             }
             else
             {
-                _logger.LogInformation("Access token regenerated for {EmployeeCode}.",employee.EmployeeCode);
+                _logger.LogInformation("Access token regenerated for {EmployeeCode}.", employee.EmployeeCode);
                 var tokens = _jwtService.GenerateAccessTokenOnly(employee);
 
                 response = new RefreshTokenResponseDto

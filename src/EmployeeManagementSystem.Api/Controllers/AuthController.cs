@@ -1,4 +1,4 @@
-﻿using EmployeeManagementSystem.Business.DTOs.Auth;
+using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,18 +17,21 @@ namespace EmployeeManagementSystem.Api.Controllers
             _logger = logger;
         }
 
-
-
         //login
         [HttpPost("login")]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(LoginResponseDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequest)
         {
             _logger.LogInformation("Inside Login endpoint.");
             var loginResponse = await _authService.LoginAsync(loginRequest);
 
             if (!loginResponse.Success)
+            {
                 return Unauthorized(loginResponse);
+            }
 
             return Ok(loginResponse);
         }
@@ -36,13 +39,18 @@ namespace EmployeeManagementSystem.Api.Controllers
         // Refresh Access Token
         [HttpPost("refresh")]
         [AllowAnonymous]
+        [ProducesResponseType(typeof(RefreshTokenResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(RefreshTokenResponseDto), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto request)
         {
             _logger.LogInformation("Inside Refresh endpoint.");
             var response = await _authService.RefreshTokenAsync(request);
 
             if (!response.Success)
+            {
                 return Unauthorized(response);
+            }
 
             return Ok(response);
         }

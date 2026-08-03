@@ -1,7 +1,8 @@
-﻿using EmployeeManagementSystem.Business.Interfaces;
+using EmployeeManagementSystem.Api.Extensions;
+using EmployeeManagementSystem.Business.DTOs.Admin;
+using EmployeeManagementSystem.Business.Interfaces;
 using EmployeeManagementSystem.DataAccess.common;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EmployeeManagementSystem.Api.Controllers
@@ -20,26 +21,36 @@ namespace EmployeeManagementSystem.Api.Controllers
             _logger = logger;
         }
 
-
-
         //get all assigned employees(search sort available)
         [HttpGet("employees")]
+        [ProducesResponseType(typeof(PagedResponse<EmployeeListDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllEmployees([FromQuery] EmployeeQueryParameters parameters)
         {
             _logger.LogInformation("Inside GetAllEmployees in ManagerController");
             var managerCode = User.FindFirst("EmployeeCode")?.Value;
-            var response =  await _managerService.GetAssignedEmployeesAsync(managerCode, parameters);
-            return Ok(response);
+            var result = await _managerService.GetAssignedEmployeesAsync(managerCode, parameters);
+            if (!result.Success)
+                return this.ToErrorActionResult(result);
+
+            return Ok(result.Value);
         }
 
         //get a specific employee(using employee code)
         [HttpGet("employees/{employeeCode}")]
+        [ProducesResponseType(typeof(EmployeeDetailsResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAssignedEmployee(string employeeCode)
         {
             _logger.LogInformation("Inside GetAssignedEmployee in ManagerController");
             var managerCode = User.FindFirst("EmployeeCode")?.Value;
-            var response = await _managerService.GetAssignedEmployeeAsync(managerCode, employeeCode);
-            return Ok(response);
+            var result = await _managerService.GetAssignedEmployeeAsync(managerCode, employeeCode);
+            if (!result.Success)
+                return this.ToErrorActionResult(result);
+
+            return Ok(result.Value);
         }
     }
 }

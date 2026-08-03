@@ -1,7 +1,6 @@
 ﻿using EmployeeManagementSystem.Business.DTOs.Auth;
 using EmployeeManagementSystem.Business.Interfaces;
 using Microsoft.Extensions.Caching.Memory;
-using System;
 
 namespace EmployeeManagementSystem.Business.Services
 {
@@ -25,8 +24,8 @@ namespace EmployeeManagementSystem.Business.Services
             string refreshToken,
             RefreshTokenResponseDto response,
             TimeSpan duration)
-            {
-                _cache.Set(refreshToken, response, duration);
-            }
+        {
+            _cache.Set(refreshToken, response, duration);
+        }
     }
 }
