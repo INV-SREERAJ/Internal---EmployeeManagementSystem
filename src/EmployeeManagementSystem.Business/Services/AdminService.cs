@@ -225,7 +225,7 @@ namespace EmployeeManagementSystem.Business.Services
                 return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee doesnt exist check the employee code.");
             }
 
-            if(employee.Status == EmployeeStatus.Deleted)
+            if (employee.Status == EmployeeStatus.Deleted)
             {
                 return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee is deleted.");
             }
@@ -256,7 +256,7 @@ namespace EmployeeManagementSystem.Business.Services
                 return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee not found, check the employeeCode.");
             }
 
-            if(employee.Status == EmployeeStatus.Deleted)
+            if (employee.Status == EmployeeStatus.Deleted)
             {
                 _logger.LogWarning("Update failed. Employee {EmployeeCode} is deleted.", employeeCode);
                 return Result<EmployeeDetailsResponseDto>.Fail(ErrorType.NotFound, "Employee is deleted, activate him.");
@@ -371,7 +371,7 @@ namespace EmployeeManagementSystem.Business.Services
 
             var employee = await _adminRepository.GetEmployeeByEmployeeCodeAsync(employeeCode);
 
-            if (employee == null || employee.Status==EmployeeStatus.Deleted)
+            if (employee == null || employee.Status == EmployeeStatus.Deleted)
             {
                 _logger.LogWarning("Change in RM failed, {EmployeeCode} is either deleted or does not exist", employeeCode);
                 return Result.Fail(ErrorType.NotFound, "Change in RM failed: employee does not exist or is deleted");
@@ -436,7 +436,13 @@ namespace EmployeeManagementSystem.Business.Services
                 return Result.Fail(ErrorType.NotFound, "User not found, check the employee code...");
             }
 
-            if(employee.Status == EmployeeStatus.Deleted)
+            if (employee.Role == Role.Admin)
+            {
+                _logger.LogInformation("Reset password failed, admin password cannot be resetted {employeeCode}.", employeeCode);
+                return Result.Fail(ErrorType.Conflict, "Cannot reset Admin password.");
+            }
+
+            if (employee.Status == EmployeeStatus.Deleted)
             {
                 _logger.LogInformation("Reset password failed, the employee was deleted {employeeCode}", employeeCode);
                 return Result.Fail(ErrorType.Conflict, "User was deleted, cant reset the password.");
@@ -454,9 +460,9 @@ namespace EmployeeManagementSystem.Business.Services
             {
                 await _emailService.ResetPasswordEmailAsync(employee.Email, $"{employee.FirstName} {employee.LastName}", temp);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                _logger.LogInformation("Reset password Email sending failed.");
+                _logger.LogInformation("Reset password Email sending failed for {employeeCode}.", employeeCode);
             }
 
             _logger.LogInformation("Password resetted for user: {employeeCode}, successfully.", employeeCode);

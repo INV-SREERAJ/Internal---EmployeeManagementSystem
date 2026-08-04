@@ -45,7 +45,7 @@ namespace EmployeeManagementSystem.Api.Middleware
                 return;
             }
 
-            
+
 
             var path = context.Request.Path.Value?.ToLower();
 
