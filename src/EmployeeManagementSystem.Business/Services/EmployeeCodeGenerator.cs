@@ -18,12 +18,11 @@ namespace EmployeeManagementSystem.Business.Services
         // employee code of the form EMP20260001
         public async Task<Result<string>> GenerateEmployeeCodeAsync(Role role)
         {
-            string prefix = "EMP";
 
             int year = DateTime.UtcNow.Year;
 
             string? lastCode =
-                await _adminRepository.GetLastEmployeeCodeAsync(prefix, year);
+                await _adminRepository.GetLastEmployeeCodeAsync(year);
 
             int nextNumber = 1;
 
@@ -34,7 +33,7 @@ namespace EmployeeManagementSystem.Business.Services
                 nextNumber = int.Parse(sequence) + 1;
             }
 
-            return Result<string>.Ok($"{prefix}{year}{nextNumber:D4}");
+            return Result<string>.Ok($"EMP{year}{nextNumber:D4}");
         }
     }
 }

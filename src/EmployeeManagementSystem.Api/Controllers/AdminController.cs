@@ -136,10 +136,10 @@ namespace EmployeeManagementSystem.Api.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> ChangeReportingManager([FromRoute] string EmployeeCode, [FromBody] string managerEmployeeCode)
+        public async Task<IActionResult> ChangeReportingManager([FromRoute] string EmployeeCode, [FromBody] ChangeReportingManagerRequest managerEmployeeCode)
         {
             _logger.LogInformation("Inside ChangeReportingManager for {employeeCode}.", EmployeeCode);
-            var result = await _adminService.ChangeReportingManagerAsync(EmployeeCode, managerEmployeeCode);
+            var result = await _adminService.ChangeReportingManagerAsync(EmployeeCode, managerEmployeeCode.ManagerEmployeeCode);
 
             if (!result.Success)
                 return this.ToErrorActionResult(result);

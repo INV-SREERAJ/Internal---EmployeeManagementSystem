@@ -19,6 +19,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         public async Task<Employee?> GetAssignedEmployeeAsync(int managerId, string employeeCode)
         {
             return await _context.Employees
+                .AsNoTracking()
                 .Include(e => e.Manager)
                 .FirstOrDefaultAsync(e =>
                     e.ManagerId == managerId &&
@@ -29,6 +30,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         public async Task<(IEnumerable<Employee> employees, int TotalCount)> GetAssignedEmployeesAsync(int managerId, EmployeeQueryParameters parameters)
         {
             var query = _context.Employees
+                .AsNoTracking()
                 .Where(e => e.ManagerId == managerId && e.Status != EmployeeStatus.Deleted)
                 .Include(e => e.Manager)
                 .AsQueryable();
