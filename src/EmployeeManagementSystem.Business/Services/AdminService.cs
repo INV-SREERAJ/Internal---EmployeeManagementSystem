@@ -403,6 +403,13 @@ namespace EmployeeManagementSystem.Business.Services
                 return Result.Fail(ErrorType.Conflict, "Selected manager is inactive.");
             }
 
+
+            if(manager.ManagerId == employee.Id)
+            {
+                _logger.LogInformation("Change in RM failed as the manager {managerEmployeeCode} reports to the employee {employeeCode}", managerEmployeeCode, employeeCode);
+                return Result.Fail(ErrorType.Conflict, "Selected manager reports to the employee.");
+            }
+
             if (employee.Role == Role.Admin)
             {
                 _logger.LogWarning("Change in RM failed, {EmployeeCode} is admin and admin cant have manager", employeeCode);

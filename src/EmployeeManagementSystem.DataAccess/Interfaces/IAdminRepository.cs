@@ -13,7 +13,7 @@ namespace EmployeeManagementSystem.DataAccess.Interfaces
 
         //enable/disable feature in admin
 
-        Task<string?> GetLastEmployeeCodeAsync(string prefix, int year);
+        Task<string?> GetLastEmployeeCodeAsync(int year);
 
 
     }

@@ -40,8 +40,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
             return await _context.Employees
                 .Include(e => e.Manager)
                 .FirstOrDefaultAsync(e =>
-                    e.EmployeeCode == employeeCode &&
-                    e.Status != EmployeeStatus.Deleted);
+                    e.EmployeeCode == employeeCode);
         }
 
         public async Task<Employee?> GetByIdAsync(int id)

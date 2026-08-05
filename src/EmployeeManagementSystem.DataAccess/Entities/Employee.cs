@@ -18,13 +18,14 @@ namespace EmployeeManagementSystem.DataAccess.Entities
         //used to check if the refresh token is still active
         public int TokenVersion { get; set; }
 
-        //used to make the user reset the password in the initial login
+        //used to make the user change the password in the initial login
         public bool MustChangePassword { get; set; }
 
         public EmployeeStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
+        //self referencing Foriegn key
         public Employee? Manager { get; set; }
         public ICollection<Employee> Employees { get; set; } = new List<Employee>();
     }

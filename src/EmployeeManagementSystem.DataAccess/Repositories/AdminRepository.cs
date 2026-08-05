@@ -23,6 +23,7 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         public async Task<(IEnumerable<Employee> employees, int TotalCount)> GetEmployeesAsync(EmployeeQueryParameters parameters)
         {
             var query = _context.Employees
+                .AsNoTracking()
                 .Include(e => e.Manager)
                 .AsQueryable();
 
@@ -99,9 +100,9 @@ namespace EmployeeManagementSystem.DataAccess.Repositories
         }
 
 
-        public async Task<string?> GetLastEmployeeCodeAsync(string prefix, int year)
+        public async Task<string?> GetLastEmployeeCodeAsync(int year)
         {
-            string pattern = $"{prefix}{year}";
+            string pattern = $"EMP{year}";
 
             return await _context.Employees
                 .Where(e => e.EmployeeCode.StartsWith(pattern))
